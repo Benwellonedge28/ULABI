@@ -1,3146 +1,3806 @@
-I read the current ULABI-DESIGN.md in Benwellonedge28/ULABI. It is already substantially developed: it establishes the language-neutral architecture, Core + Profiles model, interoperability modes, semantic types, memory boundaries, security, self-healing, distributed operation, hardware, compatibility, and conformance direction.
+I read the current ULABI-DESIGN.md in Benwellonedge28/ULABI before preparing this. The repository currently has the master design at specification version 0.2.0-draft, and its architecture explicitly establishes ULABI as language-, runtime-, OS-, CPU-, and vendor-neutral, with a Minimal Core + Standard Profiles + Extensible Ecosystem model.
 
-So Design Document 3 should not repeat the master architecture. It should drill down into the actual ABI foundation:
+I also checked the existing docs/abi/ tree. The ABI documents already exist, including core-abi.md, calling-convention.md, data-types.md, memory-model.md, register-model.md, exception-model.md, return-values.md, and stack-model.md.
 
-> docs/abi/core-abi.md — ULABI Core ABI Specification
+Because you asked to rewrite doc/abi/core-abi.md, note that the repository path is actually docs/abi/core-abi.md (plural docs). I would use the existing repository path rather than create a second doc/ tree.
+
+1. Dependency order for the ULABI implementation
+
+The important change I recommend is that we do not implement files according to the order in which they happen to appear in the documentation tree.
+
+We should build the standard in dependency order:
+
+PHASE 0 — GOVERNANCE / IDENTITY
+        │
+        ├── ULABI-GOVERNANCE.md
+        ├── ULABI-VERSIONING.md
+        └── specification identifiers
+        │
+        ▼
+PHASE 1 — FOUNDATIONAL CONTRACTS
+        │
+        ├── ULABI-SPEC.md
+        ├── schemas/interface-id.schema.*
+        ├── schemas/type-id.schema.*
+        ├── schemas/version.schema.*
+        └── schemas/error.schema.*
+        │
+        ▼
+PHASE 2 — CORE ABI
+        │
+        ├── docs/abi/core-abi.md
+        ├── docs/abi/data-types.md
+        ├── docs/abi/calling-convention.md
+        ├── docs/abi/register-model.md
+        ├── docs/abi/stack-model.md
+        ├── docs/abi/memory-model.md
+        ├── docs/abi/exception-model.md
+        └── docs/abi/return-values.md
+        │
+        ▼
+PHASE 3 — INTEROPERABILITY
+        │
+        ├── language-interoperability.md
+        ├── foreign-function-interface.md
+        ├── object-model.md
+        ├── name-mangling.md
+        ├── symbol-resolution.md
+        └── cross-language-data.md
+        │
+        ▼
+PHASE 4 — RUNTIME
+        │
+        ├── runtime-interface.md
+        ├── process-model.md
+        ├── threading.md
+        ├── async-model.md
+        ├── concurrency.md
+        └── resource-management.md
+        │
+        ▼
+PHASE 5 — MEMORY
+        │
+        ├── memory-safety.md
+        ├── ownership.md
+        ├── lifetimes.md
+        ├── allocation.md
+        ├── virtual-memory.md
+        └── shared-memory.md
+        │
+        ▼
+PHASE 6 — SECURITY
+        │
+        ├── security-model.md
+        ├── capability-security.md
+        ├── sandboxing.md
+        ├── cryptography.md
+        ├── authentication.md
+        ├── authorization.md
+        ├── zero-trust.md
+        ├── secure-loading.md
+        └── supply-chain-security.md
+        │
+        ▼
+PHASE 7 — DISTRIBUTED / RELIABILITY
+        │
+        ├── distributed-abi.md
+        ├── remote-calls.md
+        ├── serialization.md
+        ├── self-healing.md
+        ├── fault-detection.md
+        ├── fault-isolation.md
+        ├── recovery.md
+        └── rollback.md
+        │
+        ▼
+PHASE 8 — COMPATIBILITY
+        │
+        ├── backwards-compatibility.md
+        ├── forwards-compatibility.md
+        ├── feature-negotiation.md
+        ├── capability-discovery.md
+        └── graceful-degradation.md
+        │
+        ▼
+PHASE 9 — CONFORMANCE
+        │
+        ├── conformance.md
+        ├── compliance-levels.md
+        ├── test-suite.md
+        ├── certification.md
+        └── reference-implementations.md
+
+The key principle is:
+
+> A document may depend on another document, but it must not require a future rewrite merely because that dependent document is implemented later.
 
 
 
-This is the document that should eventually answer: “Exactly what must two independently implemented systems agree upon at the binary boundary?”
+That is why the contract below defines its integration points explicitly now.
 
-Copy/paste this as docs/abi/core-abi.md:
-
-# ULABI Core ABI
-
-**Document:** `docs/abi/core-abi.md`  
-**Project:** ULABI  
-**Full Name:** Universal Language Application Binary Interface  
-**Specification Area:** Core ABI  
-**Version:** 0.1.0-draft  
-**Status:** Design Specification / Pre-Implementation  
-**License:** Apache-2.0  
 
 ---
 
-# 1. Purpose
+2. docs/abi/core-abi.md
 
-This document defines the design of the ULABI Core ABI.
+Below is the replacement document.
 
-The Core ABI is the smallest stable binary interoperability layer required for
-independently implemented software components to communicate.
+Copy everything from the next heading through the end into:
 
-The Core ABI defines the boundary contract between:
-
-- programming languages;
-- compilers;
-- runtimes;
-- libraries;
-- applications;
-- processes;
-- operating systems;
-- execution environments;
-- hardware-specific implementations.
-
-The Core ABI MUST remain independent of any particular:
-
-- programming language;
-- compiler;
-- runtime;
-- operating system;
-- processor architecture;
-- memory-management strategy;
-- vendor;
-- project.
-
-The Core ABI is therefore the foundation upon which ULABI profiles and
-extensions are built.
-
----
-
-# 2. Relationship to Other ULABI Documents
-
-The ULABI documentation hierarchy is:
-
-```text
-ULABI-DESIGN.md
-       |
-       v
-ULABI-SPEC.md
-       |
-       v
 docs/abi/core-abi.md
-       |
-       +---- calling-convention.md
-       +---- data-types.md
-       +---- memory-model.md
-       +---- stack-model.md
-       +---- register-model.md
-       +---- exception-model.md
-       +---- return-values.md
-
-ULABI-DESIGN.md defines the architecture.
-
-ULABI-SPEC.md defines normative system-wide requirements.
-
-This document defines the Core ABI boundary.
-
-More specialized documents MUST NOT contradict the Core ABI.
 
 
 ---
 
-3. Fundamental Rule
+ULABI Core ABI Specification
 
-The fundamental rule of the Core ABI is:
+Project: ULABI
+Full Name: Universal Language Application Binary Interface
+Document: Core ABI Specification
+Path: docs/abi/core-abi.md
+Specification Family: ABI
+Status: Draft Normative Specification
+Specification Version: 0.3.0-draft
+Core Profile: ULABI-Core
+Normative Language: RFC 2119 / RFC 8174 terminology
+License: Apache-2.0
 
-> Two independently implemented components that conform to the same applicable ULABI Core ABI contract MUST agree on the representation and interpretation of the data and operations exchanged across that boundary.
+
+---
+
+1. Purpose
+
+This document defines the ULABI Core ABI.
+
+The Core ABI is the smallest stable contract required for independently implemented software components to interoperate through ULABI.
+
+ULABI Core defines:
+
+interface identity;
+
+callable interface contracts;
+
+parameter and result boundaries;
+
+universal ABI types;
+
+representation boundaries;
+
+ownership boundaries;
+
+lifetime boundaries;
+
+execution semantics;
+
+error propagation;
+
+capability declarations;
+
+deterministic behavior requirements;
+
+compatibility requirements;
+
+validation requirements;
+
+ABI discovery requirements.
 
 
+ULABI Core does not define:
 
-The internal implementation MAY be completely different.
+a programming language;
+
+a compiler;
+
+a CPU instruction set;
+
+an operating system;
+
+a specific runtime;
+
+a garbage collector;
+
+a particular object model;
+
+a particular transport;
+
+a particular network protocol;
+
+a particular vendor implementation.
+
+
+An implementation MAY use any internal architecture provided that its externally observable ULABI behavior conforms to this specification.
+
+
+---
+
+2. Architectural Position
+
+ULABI follows:
+
+ULABI-DESIGN.md
+                       │
+                       ▼
+                 ULABI Core ABI
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+      Types          Calls          Errors
+        │              │              │
+        └──────────────┼──────────────┘
+                       │
+                Extension Profiles
+                       │
+       ┌───────────────┼────────────────┐
+       │               │                │
+    Security        Async          Distributed
+       │               │                │
+       └───────────────┼────────────────┘
+                       │
+                 Implementations
+
+The Core is intentionally smaller than the complete ULABI ecosystem.
+
+Advanced behavior belongs in profiles.
+
+
+---
+
+3. Normative Terminology
+
+The following terms are normative.
+
+MUST
+
+The requirement is mandatory for conformance.
+
+MUST NOT
+
+The behavior is prohibited.
+
+SHOULD
+
+The behavior is recommended unless a documented implementation constraint exists.
+
+SHOULD NOT
+
+The behavior is discouraged unless a documented reason exists.
+
+MAY
+
+The behavior is optional.
+
+Core
+
+The mandatory ULABI interoperability contract.
+
+Profile
+
+A standardized extension of ULABI Core.
+
+Implementation
+
+A compiler, runtime, library, operating-system component, language binding, service, device, or other system implementing ULABI.
+
+Provider
+
+The component implementing an exported ULABI interface.
+
+Consumer
+
+The component invoking or consuming a ULABI interface.
+
+Boundary
+
+The point at which ULABI-defined semantics cross between independently implemented components.
+
+
+---
+
+4. Core Design Principles
+
+ULABI Core MUST satisfy the following principles.
+
+4.1 Language neutrality
+
+No language-specific ABI assumption may be required.
 
 For example:
 
-Language A
-    |
-Compiler A
-    |
-Runtime A
-    |
-    v
-  ULABI
-    ^
-    |
-Runtime B
-    |
-Compiler B
-    |
-Language B
+C ABI        ┐
+Rust ABI     │
+Python ABI   │
+Java ABI     ├──> ULABI Core
+Go ABI       │
+Zamani ABI   │
+Sankofa ABI  ┘
 
-The implementations do not need to share:
+ULABI is the common contract.
 
-source syntax;
-
-type-checker implementation;
-
-garbage collector;
-
-object model;
-
-compiler;
-
-runtime;
-
-operating system.
-
-
-Only the ULABI boundary contract must agree.
+It is not an abstraction of any one language.
 
 
 ---
 
-4. Zamani and Sankofa Independence
+4.2 Runtime neutrality
 
-ULABI MUST remain independent from Zamani and Sankofa.
+ULABI Core MUST NOT require:
 
-ULABI
-             /     \
-            /       \
-       Zamani      Sankofa
+reference counting;
 
-Zamani MAY implement ULABI.
+tracing garbage collection;
 
-Sankofa MAY implement ULABI.
+ownership checking;
 
-Neither language defines the Core ABI.
+borrow checking;
 
-Neither language may be treated as the reference language for ULABI.
+manual allocation;
 
-The same Core ABI MUST be implementable by unrelated languages.
+automatic allocation;
+
+a specific scheduler;
+
+a specific exception runtime.
+
+
+Implementations translate their internal runtime semantics into the ULABI contract.
 
 
 ---
 
-5. Scope
+4.3 Architecture neutrality
 
-The Core ABI covers:
+ULABI Core MUST NOT assume:
 
-1. ABI identity
+32-bit CPUs;
 
+64-bit CPUs;
 
-2. ABI versioning
+little-endian CPUs;
 
+big-endian CPUs;
 
-3. Interface identity
+a fixed register count;
 
+a fixed stack architecture;
 
-4. Function identity
-
-
-5. Type identity
-
-
-6. Primitive representations
+a fixed pointer width.
 
 
-7. Composite representations
-
-
-8. Binary encoding
-
-
-9. Alignment
-
-
-10. Byte ordering
-
-
-11. Calling conventions
-
-
-12. Argument passing
-
-
-13. Return values
-
-
-14. Error boundaries
-
-
-15. Ownership metadata
-
-
-16. Lifetime metadata
-
-
-17. Capability declarations
-
-
-18. ABI metadata
-
-
-19. Compatibility
-
-
-20. Validation
-
-
-21. ABI negotiation
-
-
-
-The Core ABI does NOT mandate:
-
-one processor calling convention;
-
-one operating system;
-
-one transport;
-
-one runtime;
-
-one memory allocator;
-
-one garbage collector;
-
-one object model;
-
-one concurrency model.
-
+Architecture-specific mappings belong to platform profiles.
 
 
 ---
 
-6. Core ABI Philosophy
+4.4 Transport neutrality
 
-ULABI Core follows:
+The same ULABI interface contract MAY be realized through:
 
-Minimal
-Explicit
-Deterministic
-Versioned
-Language-Neutral
-Architecture-Neutral
-Secure-by-Default
-Extensible
-Testable
-
-The Core should be difficult to change.
-
-Advanced features belong in profiles.
-
-
----
-
-7. ABI Boundary
-
-A ULABI boundary exists whenever independently implemented components exchange data or invoke operations under a ULABI contract.
-
-Examples:
-
-Language ↔ Language
-Compiler ↔ Runtime
-Library ↔ Application
-Process ↔ Process
-Application ↔ Device
-Runtime ↔ Accelerator
-Host ↔ WebAssembly
-Machine ↔ Machine
-
-The boundary MAY be:
-
-in-process;
-
-out-of-process;
-
-local IPC;
+direct in-process calls;
 
 shared memory;
 
-remote;
+operating-system IPC;
 
-hardware-mediated.
+process messaging;
+
+local sockets;
+
+network transport;
+
+WebAssembly host calls;
+
+accelerator interfaces.
 
 
-The Core contract remains conceptually stable.
-
-
----
-
-8. Locality
-
-Every interface SHOULD declare its locality.
-
-Supported semantic locality classes:
-
-LOCAL
-PROCESS
-HOST
-REMOTE
-DISTRIBUTED
-
-A local operation MUST NOT silently become remote.
-
-A remote operation MUST expose the additional failure and latency semantics required by the applicable profile.
+Transport behavior MUST NOT silently alter the semantic contract.
 
 
 ---
 
-9. ABI Identity
+5. Core ABI Object Model
 
-Every ULABI ABI implementation MUST expose an ABI identity.
+A ULABI interface consists of:
 
-The identity consists conceptually of:
+Interface
+ ├── Interface Identity
+ ├── Version
+ ├── Capabilities
+ ├── Functions
+ │    ├── Function Identity
+ │    ├── Parameters
+ │    ├── Result
+ │    ├── Errors
+ │    ├── Effects
+ │    └── Execution Semantics
+ ├── Types
+ ├── Ownership Rules
+ ├── Lifetime Rules
+ └── Compatibility Rules
 
-ULABI
-Major
-Minor
-Profile
-Implementation ABI Mapping
+
+---
+
+6. Interface Identity
+
+Every externally visible ULABI interface MUST have a globally stable identity.
+
+An interface identifier MUST NOT depend solely on:
+
+source filename;
+
+memory address;
+
+compiler-generated local number;
+
+process ID;
+
+executable location.
+
+
+The identity SHOULD be represented as a canonical identifier.
+
+Conceptually:
+
+ULABI Interface ID
+    |
+    +-- Namespace
+    +-- Name
+    +-- Major Version
+    +-- Identity Digest
+
+The exact wire representation is defined by the ULABI identity schema.
+
+
+---
+
+7. Function Identity
+
+Every externally callable function MUST have a stable function identity within its interface.
+
+A function identity MUST remain stable across compatible implementation changes.
+
+A function identity MUST NOT be derived exclusively from:
+
+source line;
+
+linker address;
+
+register address;
+
+generated machine-code address.
+
+
+Conceptually:
+
+InterfaceID
+    +
+FunctionID
+    +
+Signature
+    +
+Semantic Contract
+
+defines a callable ULABI operation.
+
+
+---
+
+8. Function Contract
+
+A ULABI function contract contains:
+
+Function
+├── identity
+├── name
+├── parameters
+├── result
+├── errors
+├── ownership
+├── lifetime
+├── effects
+├── capabilities
+├── execution mode
+├── determinism
+├── cancellation semantics
+└── compatibility metadata
 
 Example:
 
-ULABI/0.1/core
+Function:
+    calculate
 
-The exact canonical wire encoding will be finalized before ULABI 1.0.
+Parameters:
+    input: Int64
 
+Result:
+    Result<Int64, CalculationError>
 
----
+Execution:
+    synchronous
 
-10. Interface Identity
+Effects:
+    Pure
 
-Every public ULABI interface MUST have a stable interface identifier.
+Capabilities:
+    None
 
-Conceptually:
-
-InterfaceID {
-    namespace
-    name
-    version
-}
-
-The identifier MUST remain stable across compatible implementations.
-
-The identifier MUST NOT depend on:
-
-source-language syntax;
-
-compiler-generated symbol names;
-
-memory addresses;
-
-process IDs;
-
-machine-specific addresses.
-
+The source language may represent this completely differently.
 
 
 ---
 
-11. Function Identity
+9. Parameter Contract
 
-Every public function MUST have a stable function identifier.
+Each parameter MUST specify:
 
-Conceptually:
+1. stable parameter identity;
 
-FunctionID {
-    InterfaceID
-    FunctionName
-    FunctionVersion
-}
 
-The binary representation MAY use a compact numeric identifier.
+2. semantic type;
 
-Source-language names MAY be retained as metadata but MUST NOT be the only identity mechanism.
+
+3. passing mode;
+
+
+4. ownership mode;
+
+
+5. lifetime requirements;
+
+
+6. nullability/optionality semantics;
+
+
+7. validation requirements.
+
+
+
+Passing modes include:
+
+Value
+Reference
+Borrowed
+Owned
+Handle
+Slice
+Stream
+Capability
+
+Only modes defined by the applicable ULABI specification or profile may be used.
+
+
+---
+
+10. Result Contract
+
+Each function MUST define its result semantics.
+
+A function MAY return:
+
+Unit
+Value
+Option<T>
+Result<T,E>
+Tuple
+Record
+Handle
+Stream
+Future
+
+The result contract MUST explicitly define:
+
+representation;
+
+ownership;
+
+lifetime;
+
+failure behavior;
+
+validity;
+
+cleanup responsibility.
+
+
+A function MUST NOT communicate undocumented semantic results through hidden ABI state.
+
+
+---
+
+11. Universal Boundary Types
+
+ULABI Core defines the foundational semantic type families:
+
+Bool
+Int
+UInt
+Float
+Char
+String
+Bytes
+Unit
+List
+Record
+Enum
+Variant
+Option
+Result
+Handle
+
+Additional types belong to standardized extensions.
+
+The complete binary representation is defined by the type-system and encoding specifications.
 
 
 ---
 
 12. Type Identity
 
-Every non-primitive externally visible type SHOULD have a stable type identity.
+Every non-primitive externally shared type SHOULD have a stable type identity.
 
-Conceptually:
+Type identity MUST remain independent of:
 
-TypeID {
-    namespace
-    name
-    version
-}
+source language;
 
-A type's identity represents its ABI meaning, not its internal implementation.
+compiler;
+
+implementation memory layout;
+
+local symbol name.
 
 
----
+For example:
 
-13. Signature Identity
+ULABI.Type.Person
 
-A function signature consists of:
+is conceptually different from:
 
-FunctionID
-Parameter Types
-Return Type
-Error Model
-Calling Convention
-Ownership Contract
-Effect Contract
+Rust struct Person
+C struct Person
+Python class Person
 
-A signature change that alters binary interpretation MUST create a new compatibility boundary.
+The implementations may have completely different layouts.
 
 
 ---
 
-14. ABI Metadata
+13. Representation Independence
 
-A ULABI component SHOULD expose machine-readable metadata containing:
+ULABI separates:
 
-ABI Version
-Profile
-Interfaces
-Functions
-Types
-Capabilities
-Dependencies
-Architecture Mapping
-Security Requirements
-
-Metadata MUST itself use a versioned format.
-
-
----
-
-15. Canonical Representation
-
-Where ULABI defines a canonical representation, all conformant implementations MUST interpret that representation identically.
-
-Canonical representations MUST be deterministic.
-
-Equivalent values MUST NOT have multiple incompatible canonical encodings.
-
-
----
-
-16. Native Representation vs ULABI Representation
-
-ULABI distinguishes:
-
-Source Representation
-        |
-        v
-Implementation Representation
-        |
-        v
+Semantic Type
+       │
+       ▼
 ULABI Boundary Representation
+       │
+       ▼
+Implementation Representation
 
-A language MAY internally represent a value differently.
+A provider MUST be allowed to translate its internal representation into the canonical ULABI representation.
 
-For example:
+A consumer MUST NOT assume the provider's internal representation.
 
-Language A:
-    custom_string_object
 
-Language B:
-    managed_string
-
-ULABI:
-    String {
-        encoding
-        length
-        data
-    }
-
-Only the boundary representation must be interoperable.
-
-
----
-
-17. Primitive Types
-
-The Core ABI defines the following semantic primitive types:
-
-Bool
-
-I8
-I16
-I32
-I64
-I128
-
-U8
-U16
-U32
-U64
-U128
-
-F32
-F64
-
-Char
-Byte
-
-Additional types MAY be introduced through future specifications.
-
-
----
-
-18. Fixed-Width Principle
-
-ULABI MUST prefer explicitly sized types.
-
-ULABI MUST NOT use ambiguous concepts such as:
-
-int
-long
-word
-native_int
-pointer-sized integer
-
-as universal ABI types without explicitly defining their width.
-
-This prevents architecture-dependent interpretation.
-
-
----
-
-19. Signed Integers
-
-Signed integers use two's-complement semantics unless a future specification explicitly defines otherwise.
-
-Supported widths:
-
-I8
-I16
-I32
-I64
-I128
-
-Each type has a fixed width.
-
-The exact binary byte ordering is defined by the applicable encoding profile.
-
-
----
-
-20. Unsigned Integers
-
-Unsigned integers represent values using their full available bit width.
-
-Supported widths:
-
-U8
-U16
-U32
-U64
-U128
-
-Overflow behaviour MUST be explicitly defined by the operation or type contract.
-
-
----
-
-21. Floating-Point Types
-
-Core floating-point types:
-
-F32
-F64
-
-A conformant implementation MUST define:
-
-width;
-
-encoding;
-
-special values;
-
-NaN behaviour;
-
-infinity;
-
-signed zero;
-
-conversion behaviour.
-
-
-ULABI SHOULD align with widely interoperable IEEE-compatible representations where practical.
-
-
----
-
-22. Boolean
-
-The semantic Boolean type has exactly two values:
-
-false
-true
-
-ULABI MUST define a canonical boundary representation.
-
-A receiver MUST NOT infer Boolean semantics from arbitrary memory contents.
-
-
----
-
-23. Byte
-
-A ULABI Byte is exactly 8 bits.
-
-Its range is:
-
-0..255
-
-A byte is not necessarily text.
-
-
----
-
-24. Character
-
-Char represents a Unicode scalar value or the explicitly defined character domain of the applicable ULABI specification.
-
-A language-specific character representation MUST NOT be assumed.
-
-
----
-
-25. Unit
-
-ULABI SHOULD define a semantic Unit type representing successful completion without a value.
-
-Example:
-
-Result<Unit, Error>
-
-
----
-
-26. Strings
-
-The Core ABI defines the semantic concept:
-
-String
-
-A string MUST include sufficient information to determine:
-
-Encoding
-Length
-Data
-
-ULABI SHOULD use UTF-8 as its canonical string representation.
-
-The specification MUST define how invalid UTF-8 is handled.
-
-
----
-
-27. String Termination
-
-ULABI MUST NOT require null termination for strings.
-
-A string length MUST be explicitly represented or determinable.
-
-A null-terminated language string MAY be adapted to ULABI.
-
-
----
-
-28. Byte Sequences
-
-Binary data MUST be represented separately from text.
-
-Conceptually:
-
-Bytes {
-    length
-    data
-}
-
-Binary data MAY contain arbitrary byte values.
-
-
----
-
-29. Arrays
-
-An array consists of:
-
-ElementType
-Length
-Elements
-
-The receiver MUST be able to determine the element count.
-
-ULABI arrays MUST NOT rely on sentinel termination.
-
-
----
-
-30. Records
-
-A record is an ordered or explicitly identified collection of fields.
-
-Conceptually:
-
-Record {
-    FieldID
-    FieldType
-    FieldValue
-}
-
-The binary representation MUST define field ordering or explicit field identifiers.
-
-
----
-
-31. Struct Layout
-
-A fixed-layout struct MUST define:
-
-Field
-Type
-Offset
-Alignment
-Size
-
-No implementation may assume native compiler struct layout unless the ULABI profile explicitly specifies it.
-
-
----
-
-32. Enums
-
-An enum consists of a fixed set of variants.
-
-Each variant MUST have a stable identifier.
-
-Example:
-
-Status {
-    Pending
-    Running
-    Complete
-    Failed
-}
-
-The binary discriminant representation MUST be defined.
-
-
----
-
-33. Variants
-
-A variant represents one of several possible data forms.
-
-Example:
-
-Value =
-    Integer(I64)
-    Text(String)
-    Bytes(Bytes)
-
-The active variant MUST be explicitly identifiable.
-
-
----
-
-34. Option
-
-ULABI SHOULD provide:
-
-Option<T>
-
-with:
-
-None
-Some(T)
-
-The representation MUST distinguish the two states unambiguously.
-
-
----
-
-35. Result
-
-ULABI SHOULD provide:
-
-Result<T, E>
-
-with:
-
-Ok(T)
-Err(E)
-
-The result mechanism allows languages with different error systems to interoperate.
-
-
----
-
-36. Handles
-
-A Handle represents an opaque reference to a resource or implementation object.
-
-A handle MUST NOT expose implementation-specific memory layout unless the applicable contract explicitly requires it.
-
-Example:
-
-Handle<File>
-Handle<Device>
-Handle<Stream>
-Handle<Process>
-
-
----
-
-37. Opaque Objects
-
-ULABI MAY expose opaque objects.
-
-Opaque objects are accessed only through their published interfaces.
-
-An implementation MUST NOT assume knowledge of the object's internal layout.
-
-
----
-
-38. Pointer Policy
-
-Raw native pointers MUST NOT be treated as universally portable ABI values.
-
-A raw pointer MAY be used only within a boundary where:
-
-address-space compatibility is guaranteed;
-
-lifetime is defined;
-
-ownership is defined;
-
-safety is defined.
-
-
-For portable boundaries, ULABI SHOULD prefer:
-
-Handle
-Offset
-Buffer Descriptor
-Capability
-
-
----
-
-39. Buffer Descriptor
-
-A portable buffer descriptor SHOULD contain:
-
-Data Reference
-Length
-Capacity
-Element Size
-Alignment
-Mutability
-Ownership
-Lifetime
-
-The actual binary structure will be finalized by the memory-model specification.
-
-
----
-
-40. Alignment
-
-Every ABI-visible data structure MUST have defined alignment requirements.
-
-Implementations MUST NOT assume alignment that the contract does not guarantee.
-
-Misaligned data MUST be handled according to the applicable ABI rules.
-
-
----
-
-41. Padding
-
-ABI-visible padding MUST be deterministic where the structure is passed by value or serialized.
-
-Padding bytes MUST NOT contain security-sensitive uninitialized data.
-
-Canonical serialized forms SHOULD avoid unspecified padding entirely.
-
-
----
-
-42. Size
-
-Every fixed ABI type MUST have a defined size.
-
-Variable-sized values MUST expose sufficient metadata to determine their encoded or allocated size.
-
-
----
-
-43. Offset
-
-Every field within a fixed-layout structure MUST have a determinable offset.
-
-Offsets MUST remain stable within a stable ABI version.
-
-
----
-
-44. Byte Ordering
-
-ULABI SHOULD define a canonical byte ordering for portable binary representations.
-
-A native ABI mapping MAY use native byte order internally when the boundary contract explicitly permits it.
-
-Portable representations MUST NOT depend on native byte order.
-
-
----
-
-45. Calling Convention
-
-The calling convention defines how functions exchange arguments and results.
-
-A ULABI calling convention MUST define:
-
-Argument Order
-Argument Representation
-Return Representation
-Register Usage
-Stack Usage
-Alignment
-Aggregate Passing
-Error Passing
-Ownership Transfer
-
-Architecture-specific details belong in architecture mappings.
-
-
----
-
-46. Logical Calling Convention
-
-ULABI first defines a logical calling convention:
-
-Caller
-   |
-   +-- Function Identity
-   +-- Arguments
-   +-- Context
-   +-- Capabilities
-   |
-   v
-Callee
-   |
-   +-- Return Value
-   +-- Error
-   +-- Side Effects
-
-The logical convention is architecture-independent.
-
-
----
-
-47. Physical Calling Convention
-
-A physical calling convention maps the logical convention onto a platform.
-
-For example:
-
-ULABI Logical Call
-       |
-       v
-Architecture Mapping
-       |
-       +-- Registers
-       +-- Stack
-       +-- ABI-specific instructions
-       +-- Alignment
-
-The physical mapping MUST preserve the logical ULABI contract.
-
-
----
-
-48. Argument Passing
-
-Arguments MUST be passed according to their declared ULABI types.
-
-The caller and callee MUST agree on:
-
-Type
-Size
-Alignment
-Ownership
-Mutability
-Lifetime
-
-
----
-
-49. Pass-by-Value
-
-Small fixed-size values MAY be passed by value.
-
-The applicable calling convention MUST define the maximum value size suitable for direct passing.
-
-
----
-
-50. Pass-by-Reference
-
-Large or mutable values MAY be passed by reference.
-
-The reference MUST have an explicit contract for:
-
-Ownership
-Lifetime
-Mutability
-Alignment
-Bounds
-
-
----
-
-51. Ownership Transfer
-
-If a function consumes an owned value:
-
-Caller
-  |
-  | ownership transfer
-  v
-Callee
-
-the caller MUST NOT continue to use the resource as its own after transfer.
-
-
----
-
-52. Borrowed Arguments
-
-A borrowed argument does not transfer ownership.
-
-Example:
-
-inspect(Borrowed<Buffer>)
-
-The callee MUST respect the declared lifetime.
-
-
----
-
-53. Mutable Borrow
-
-A mutable borrowed resource MUST explicitly declare exclusive mutation permission where required.
-
-The implementation MUST prevent conflicting access according to the applicable memory profile.
-
-
----
-
-54. Return Values
-
-Every function MUST declare whether it returns:
-
-No Value
-One Value
-Multiple Values
-Result
-Stream
-Future
-Handle
-
-The Core ABI defines the semantic contract.
-
-The physical representation belongs to the calling-convention mapping.
-
-
----
-
-55. Indirect Returns
-
-Large return values MAY be returned through caller-provided storage.
-
-The contract MUST specify:
-
-Who allocates
-Who owns
-Who initializes
-Who releases
-Lifetime
-Alignment
-
-
----
-
-56. Multiple Return Values
-
-A language MAY internally support multiple return values.
-
-At the ABI boundary, they MUST be represented as either:
-
-Tuple
-Record
-Struct
-Result
-
-or another explicitly standardized representation.
-
-
----
-
-57. Error Boundary
-
-Errors MUST have a machine-readable representation.
-
-An error SHOULD contain:
-
-ErrorCode
-Category
-Severity
-Retryability
-Context
-Origin
-
-Optional information MAY include:
-
-Cause
-Stack Information
-Diagnostic Data
-Recovery Recommendation
-
-
----
-
-58. Error Codes
-
-Error codes MUST be stable within a compatible interface version.
-
-Applications SHOULD branch on error codes rather than human-readable messages.
-
-
----
-
-59. Error Ownership
-
-Error objects MUST have explicit ownership and lifetime semantics.
-
-A caller MUST NOT retain an error object beyond its declared lifetime.
-
-
----
-
-60. Exceptions
-
-ULABI Core does not mandate language-level exceptions.
-
-Languages MAY translate:
-
-ULABI Error
-
-into:
-
-Exception
-Result
-Error Value
-Status Code
-
-The binary boundary MUST remain standardized.
-
-
----
-
-61. ABI Context
-
-A ULABI call MAY carry execution context.
-
-Context may include:
-
-Caller Identity
-Interface
-Capabilities
-Deadline
-Cancellation
-Tracing Context
-Security Context
-Locale
-
-Context MUST be explicitly defined by the applicable profile.
-
-
----
-
-62. Capabilities
-
-Security-sensitive functions SHOULD declare required capabilities.
-
-Example:
-
-read_file(
-    capability: FileRead,
-    path: String
-)
-
-Possession of a function identifier MUST NOT automatically grant authority.
-
-
----
-
-63. Capability Validation
-
-Before performing a protected operation:
-
-Capability
-    |
-    v
-Validate
-    |
-    v
-Authorize
-    |
-    v
-Execute
-
-Invalid capabilities MUST result in a defined security failure.
-
-
----
-
-64. ABI Effects
-
-A function MAY declare effects.
-
-Possible effects:
-
-Pure
-ReadMemory
-WriteMemory
-ReadResource
-WriteResource
-Network
-Filesystem
-Process
-Device
-GPU
-Time
-Random
-NonDeterministic
-
-Effect metadata SHOULD be machine-readable.
-
-
----
-
-65. Determinism
-
-Functions MAY declare:
-
-Deterministic
-NonDeterministic
-EnvironmentDependent
-
-A function MUST NOT claim deterministic behaviour if external state can alter its result without being part of the contract.
-
-
----
-
-66. Idempotency
-
-A function MAY declare itself:
-
-Idempotent
-NonIdempotent
-Unknown
-
-Clients MUST NOT assume idempotency when it is not declared.
-
-This is important for retries.
-
-
----
-
-67. Side Effects
-
-Side effects MUST be represented in interface metadata when they materially affect interoperability, security, or reliability.
-
-
----
-
-68. ABI State
-
-An interface MAY maintain state.
-
-Stateful interfaces MUST define:
-
-Initialization
-Active State
-Invalid State
-Shutdown
-
-
----
-
-69. Stateless Functions
-
-A function that does not depend on persistent external state MAY be declared stateless.
-
-Statelessness MAY enable:
-
-caching;
-
-replication;
-
-deterministic testing;
-
-optimization.
-
-
-
----
-
-70. Lifecycle
-
-A ULABI component SHOULD support a lifecycle:
-
-DISCOVERED
-    |
-VERIFIED
-    |
-LOADED
-    |
-INITIALIZED
-    |
-READY
-    |
-RUNNING
-    |
-STOPPING
-    |
-STOPPED
-    |
-UNLOADED
-
-Failures MUST transition to defined failure states.
-
-
----
-
-71. ABI Validation
-
-A ULABI component MUST validate ABI metadata before relying upon it.
-
-Validation SHOULD include:
-
-ABI Version
-Profile
-Interface ID
-Function ID
-Type ID
-Size
-Alignment
-Capabilities
-Security Requirements
-
-
----
-
-72. Invalid ABI Data
-
-Malformed ABI data MUST NOT result in undefined memory access.
-
-Possible responses include:
-
-InvalidABI
-InvalidType
-InvalidLength
-InvalidAlignment
-UnsupportedVersion
-UnsupportedFeature
-SecurityViolation
-
-
----
-
-73. Length Validation
-
-Variable-length values MUST be bounds-checked.
-
-An implementation MUST NOT trust externally supplied lengths without validation.
-
-
----
-
-74. Offset Validation
-
-Offsets MUST be validated before memory access.
-
-An offset outside the permitted object or buffer MUST result in an error.
-
-
----
-
-75. Integer Conversion
-
-Conversions between ULABI numeric types MUST explicitly define:
-
-Overflow
-Underflow
-Truncation
-Sign Conversion
-Precision Loss
-
-Silent unsafe conversion MUST NOT occur across a boundary.
-
-
----
-
-76. Type Compatibility
-
-Two types are compatible only when their ULABI semantics and binary representation satisfy the applicable compatibility rules.
-
-Matching source-language names are insufficient.
-
-
----
-
-77. Structural Compatibility
-
-Two structures MAY be structurally compatible if:
-
-Fields
-Types
-Ordering/Layout
-Alignment
-Optionality
-Ownership
-
-match the applicable compatibility rules.
-
-
----
-
-78. Semantic Compatibility
-
-Binary compatibility alone is not sufficient.
-
-Two interfaces MUST also preserve required semantics.
-
-For example:
-
-Function A:
-    deletes resource
-
-Function B:
-    only reads resource
-
-They are not semantically compatible even if their binary signatures are identical.
-
-
----
-
-79. Version Compatibility
-
-ULABI uses versioned compatibility.
-
-A compatible implementation MUST identify:
-
-Major
-Minor
-Patch
-
-or the equivalent profile-defined version.
-
-
----
-
-80. Major Version
-
-A major version change MAY introduce incompatible changes.
-
-An implementation MUST NOT assume major-version compatibility.
-
-
----
-
-81. Minor Version
-
-A minor version SHOULD preserve backward compatibility within the same major version.
-
-New optional functionality SHOULD be introduced through minor versions or extensions.
-
-
----
-
-82. Patch Version
-
-Patch versions SHOULD contain:
-
-fixes;
-
-clarifications;
-
-security improvements;
-
-implementation corrections.
-
-
-Patch versions MUST NOT intentionally alter the ABI contract.
-
-
 ---
-
-83. ABI Negotiation
 
-Before using optional functionality:
+14. Calling Boundary
 
-Discover
-   |
-Compare
-   |
-Negotiate
-   |
-Verify
-   |
-Use
+The calling boundary is divided into:
 
-An implementation MUST NOT assume optional capabilities.
+Semantic Call
+     │
+     ▼
+ULABI Call Contract
+     │
+     ▼
+ABI Mapping
+     │
+     ▼
+Platform Calling Convention
 
+ULABI Core specifies the semantic contract.
 
----
-
-84. Capability Discovery
+docs/abi/calling-convention.md specifies how that contract maps to concrete ABI mechanisms.
 
-A component SHOULD expose:
+Therefore Core MUST NOT hardcode:
 
-Supported Profiles
-Supported Interfaces
-Supported Versions
-Supported Types
-Supported Extensions
+x86-64 registers;
 
+AArch64 registers;
 
----
+RISC-V registers;
 
-85. Unknown Features
+JVM operand conventions;
 
-Unknown optional features SHOULD be ignored.
+WebAssembly stack conventions.
 
-Unknown mandatory features MUST cause explicit incompatibility.
 
-An implementation MUST NOT silently reinterpret an unknown mandatory feature.
+Those belong to platform-specific mappings.
 
 
 ---
 
-86. Compatibility Matrix
+15. Register Independence
 
-A component MAY expose a machine-readable compatibility matrix:
+ULABI Core treats registers as an implementation concern.
 
-Feature              Supported
---------------------------------
-Core ABI             Yes
-Types                Yes
-Memory               Yes
-Async                No
-Security             Yes
-Distributed          No
-Self-Healing         No
+A ULABI interface MUST NOT require a specific physical register.
 
+The register mapping is defined by:
 
----
+docs/abi/register-model.md
 
-87. ABI Negotiation Failure
+and platform profiles.
 
-Negotiation failure MUST produce an explicit result.
+The same function contract MUST therefore be representable on architectures with:
 
-Example:
+0 directly usable argument registers
 
-UnsupportedVersion
-UnsupportedProfile
-UnsupportedType
-UnsupportedCapability
-IncompatibleSignature
-SecurityMismatch
+through architectures with many argument registers.
 
 
 ---
-
-88. ABI Mapping
-
-ULABI Core is architecture-neutral.
-
-A platform implementation uses:
-
-ULABI Core
-    |
-    v
-Architecture Mapping
-    |
-    v
-Native ABI
 
-The mapping may target:
+16. Stack Independence
 
-x86-64
-ARM64
-ARM32
-RISC-V
-WASM
-Other architectures
+ULABI Core MUST NOT require a particular stack layout.
 
-The list is extensible.
+Stack layout belongs to:
 
+docs/abi/stack-model.md
 
----
-
-89. Native ABI Interoperability
+An implementation MAY use:
 
-ULABI MAY map to an existing native ABI.
+hardware stack;
 
-For example:
+software stack;
 
-ULABI
-  |
-  +-- Native C ABI
-  |
-  +-- Native platform ABI
-  |
-  +-- Custom ABI
+segmented stack;
 
-The native ABI MUST NOT redefine the ULABI semantics.
+split stack;
 
-
----
+heap-based activation records;
 
-90. Architecture Mapping Requirements
+register-only calls;
 
-Every architecture mapping MUST specify:
+coroutine frames.
 
-Register Rules
-Stack Rules
-Alignment
-Argument Passing
-Return Values
-Aggregate Passing
-Calling Convention
-Exception Boundary
-Thread Context
 
-These details belong in architecture-specific specifications.
+The semantic ULABI call contract remains unchanged.
 
 
 ---
 
-91. Register Independence
+17. Memory Boundary
 
-The Core ABI MUST NOT require a particular CPU register.
+ULABI Core defines semantic memory boundaries but does not mandate one memory-management strategy.
 
-Register assignments belong to architecture mappings.
+The boundary MUST explicitly identify:
 
+ownership
+lifetime
+mutability
+aliasing
+transfer
+release
 
----
-
-92. Stack Independence
+Detailed memory semantics are specified by:
 
-The Core ABI MUST NOT assume a universal native stack layout.
+docs/abi/memory-model.md
+docs/memory/memory-safety.md
+docs/memory/ownership.md
+docs/memory/lifetimes.md
 
-The logical ABI semantics must remain independent of physical stack design.
 
-
 ---
-
-93. Zero-Copy
 
-Zero-copy is OPTIONAL.
+18. Ownership
 
-When zero-copy is used, the implementation MUST preserve:
+Every resource crossing a ULABI boundary MUST have an ownership rule.
 
-Ownership
-Lifetime
-Bounds
-Alignment
-Mutability
-Security
+Supported semantic states include:
 
-Zero-copy optimization MUST NOT weaken safety.
+Borrowed
+Owned
+Shared
+Transferred
+HandleOwned
+HandleBorrowed
+Immutable
+Mutable
 
+An implementation MUST NOT leave ownership ambiguous.
 
----
-
-94. Copy-Based Fallback
+If ownership is transferred:
 
-A ULABI implementation SHOULD provide a copy-based fallback where zero-copy is unavailable.
+Provider
+   │
+   │ transfer
+   ▼
+Consumer
 
-This allows the same logical interface to operate across different environments.
+the provider MUST NOT continue using the transferred resource except where the contract explicitly permits shared use.
 
 
 ---
-
-95. Streaming
-
-Streaming is an extension.
 
-The Core ABI MUST NOT require all values to fit into memory at once.
-
-A future streaming profile SHOULD define:
-
-Stream Identity
-Element Type
-Chunking
-Backpressure
-Completion
-Cancellation
-Failure
-
-
----
+19. Lifetime
 
-96. Large Data
+Every borrowed or referenced value MUST have a defined lifetime.
 
-Large data SHOULD be transferable through:
+The contract MUST specify whether a value is valid:
 
-Buffers
-Handles
-Streams
-Shared Memory
-Files
-Object References
+DuringCall
+UntilReturn
+UntilRelease
+UntilHandleClose
+ForInterfaceLifetime
+ExplicitlyPinned
 
-rather than requiring enormous stack arguments.
+An implementation MUST NOT retain a borrowed object beyond its permitted lifetime.
 
 
 ---
 
-97. Resource Handles
+20. Handles
 
-Resource handles MUST identify resources without exposing internal implementation details.
+Opaque resources SHOULD be represented using ULABI handles when direct representation would violate abstraction or safety.
 
 Examples:
 
 FileHandle
+SocketHandle
 DeviceHandle
-MemoryHandle
-StreamHandle
 ProcessHandle
-GPUHandle
+GpuBufferHandle
+MemoryHandle
+CapabilityHandle
+
+A handle MUST NOT expose implementation-specific internal addresses as its semantic identity.
 
 
 ---
 
-98. Handle Lifetime
+21. Nullability
 
-A handle MUST have explicit lifetime semantics.
+ULABI Core MUST NOT use an undocumented null pointer convention.
 
-Invalid or expired handles MUST produce defined errors.
+Optional values MUST use:
+
+Option<T>
+
+unless a specialized profile explicitly defines another representation.
+
+This prevents ambiguity between:
+
+missing
+invalid
+zero
+null
+empty
 
 
 ---
 
-99. Handle Security
+22. Errors
 
-A handle MUST NOT automatically grant broader privileges than the capability under which it was created.
+ULABI Core recognizes errors as explicit contract values.
+
+The preferred semantic model is:
+
+Result<T,E>
+
+where:
+
+T = success
+E = failure
+
+Exception-based language runtimes MAY map their exceptions into ULABI error semantics.
+
+They MUST NOT require the consumer to understand the provider's private exception runtime.
+
+Detailed rules are defined by:
+
+docs/abi/exception-model.md
 
 
 ---
 
-100. Thread Safety
+23. Error Identity
 
-Thread safety is an interface property.
+Errors crossing a ULABI boundary MUST have stable identities.
 
-A ULABI interface SHOULD declare:
+An error SHOULD contain:
+
+ErrorID
+Category
+Severity
+Message
+StructuredData
+Recoverability
+Retryability
+Origin
+
+Human-readable messages MUST NOT be the only machine-readable error identity.
+
+
+---
+
+24. Determinism
+
+Where a function is declared deterministic, identical valid inputs and equivalent execution context MUST produce semantically equivalent outputs.
+
+A deterministic contract MUST NOT silently depend on:
+
+wall-clock time;
+
+process identity;
+
+random state;
+
+memory addresses;
+
+unspecified iteration order;
+
+environment-specific behavior.
+
+
+Nondeterministic functions MUST declare the relevant effect.
+
+
+---
+
+25. Effects
+
+ULABI functions MAY declare effects such as:
+
+Pure
+ReadsMemory
+WritesMemory
+ReadsResource
+WritesResource
+Filesystem
+Network
+Process
+Time
+Randomness
+GPU
+ExternalDevice
+NonDeterministic
+
+Effect declarations provide machine-readable metadata for:
+
+validators;
+
+security systems;
+
+sandboxing;
+
+static analysis;
+
+conformance testing.
+
+
+An implementation MUST NOT claim a stronger effect guarantee than its behavior provides.
+
+
+---
+
+26. Capabilities
+
+A ULABI function MAY require capabilities.
+
+Examples:
+
+Filesystem.Read
+Filesystem.Write
+Network.Connect
+Process.Spawn
+GPU.Execute
+Device.Access
+Memory.Shared
+
+Capabilities MUST be explicit.
+
+A function MUST NOT acquire an undeclared privileged capability merely because its implementation requires it.
+
+
+---
+
+27. Execution Semantics
+
+Functions MUST declare relevant execution properties.
+
+Possible properties include:
+
+Synchronous
+Asynchronous
+Blocking
+NonBlocking
+Streaming
+OneShot
+LongRunning
+Cancellable
+Idempotent
+NonIdempotent
+
+A function advertised as non-blocking MUST NOT perform undocumented unbounded blocking.
+
+
+---
+
+28. Reentrancy
+
+A function MUST declare reentrancy restrictions where relevant.
+
+Possible states:
+
+Reentrant
+NonReentrant
+ThreadCompatible
+ThreadRestricted
+Serialized
+
+If an interface is non-reentrant, the contract MUST define the behavior of concurrent invocation attempts.
+
+
+---
+
+29. Thread Safety
+
+Thread safety MUST be explicit.
+
+An interface MAY specify:
 
 ThreadSafe
 ThreadCompatible
-ThreadConfined
-NotThreadSafe
+ThreadAffine
+SingleThreadOnly
+ExternallySerialized
+
+A consumer MUST NOT infer thread safety merely from successful local testing.
 
 
 ---
 
-101. Reentrancy
+30. Concurrency Independence
 
-A ULABI interface SHOULD declare whether calls may be reentrant.
+ULABI Core does not mandate a particular concurrency model.
 
-Callbacks MUST NOT assume non-reentrancy unless the contract explicitly states it.
+Implementations MAY use:
 
+OS threads;
 
----
+green threads;
 
-102. Async Boundary
+fibers;
 
-Asynchronous execution belongs primarily to the Async Profile.
+actors;
 
-However, the Core ABI MUST allow an interface to declare that an operation is not synchronous.
+event loops;
 
+async tasks;
 
----
+processes;
 
-103. Callback Identity
-
-Callbacks MUST have stable interface and function identities.
-
-Callback lifetimes MUST be explicitly defined.
+hardware execution units.
 
 
----
-
-104. Callback Safety
-
-A callback MUST NOT be invoked after its lifetime expires.
-
-If callback cancellation exists, cancellation semantics MUST be defined.
+The ULABI contract describes observable semantics rather than implementation strategy.
 
 
 ---
 
-105. ABI Events
+31. Serialization Boundary
 
-An implementation MAY expose ABI events:
+A ULABI interface that crosses a process or machine boundary MUST have an explicit representation.
 
-Created
-Started
-Stopped
-Failed
-Recovered
-Changed
-Disconnected
-Reconnected
+The serialization mechanism MUST preserve:
 
-Events MUST use versioned schemas.
+type identity;
+
+field identity;
+
+value semantics;
+
+error semantics;
+
+ownership semantics where representable;
+
+version information.
+
+
+Serialization is specified further by:
+
+docs/distributed/serialization.md
 
 
 ---
 
-106. ABI Introspection
+32. Local Versus Remote Execution
 
-Authorized tooling SHOULD be able to inspect:
+ULABI MUST distinguish execution locality.
 
-Interfaces
+Supported semantic classifications include:
+
+LocalOnly
+ProcessLocal
+HostLocal
+NetworkCapable
+RemoteCapable
+
+A function declared LocalOnly MUST NOT silently become a remote operation.
+
+Remote-capable interfaces MUST define relevant:
+
+latency;
+
+timeout;
+
+retry;
+
+cancellation;
+
+partial failure;
+
+authentication;
+
+authorization;
+
+consistency semantics.
+
+
+
+---
+
+33. Interface Discovery
+
+A ULABI implementation MAY expose interface discovery metadata.
+
+Discovery SHOULD provide:
+
+InterfaceID
+Version
+Profiles
 Functions
 Types
-Versions
 Capabilities
-Memory Contracts
-Effects
+SecurityRequirements
+CompatibilityInformation
 
-Introspection MUST respect security policies.
+Discovery MUST NOT grant capabilities by itself.
 
+Discovery answers:
 
----
-
-107. Debugging
-
-ULABI-aware debugging SHOULD expose the logical ABI representation rather than only the native implementation representation.
-
-Example:
-
-ULABI:
-    I64 value = 42
-
-Native:
-    architecture-specific representation
+> What does this component support?
 
 
----
 
-108. ABI Tracing
+It does not answer:
 
-ULABI tracing MAY record:
+> What is this caller authorized to do?
 
-Interface
-Function
-Arguments Metadata
-Result
-Error
-Duration
-Capability
-Correlation ID
-
-Sensitive values SHOULD be redacted according to policy.
-
-
----
-
-109. ABI Security
-
-The Core ABI MUST assume that ABI boundaries can be security boundaries.
-
-Implementations SHOULD protect against:
-
-malformed metadata;
-
-type confusion;
-
-integer overflow;
-
-buffer overflow;
-
-use-after-free;
-
-invalid handles;
-
-capability abuse;
-
-confused deputy attacks;
-
-replay where applicable.
 
 
 
 ---
 
-110. Type Confusion
+34. Versioning
 
-A component MUST NOT interpret a value as a different ULABI type merely because the binary sizes happen to match.
+Every ULABI interface MUST have a version.
+
+Version compatibility is governed by:
+
+ULABI-VERSIONING.md
+docs/compatibility/backwards-compatibility.md
+docs/compatibility/forwards-compatibility.md
+
+A compatible implementation MUST NOT silently reinterpret an existing function's semantic contract.
+
+
+---
+
+35. ABI Stability
+
+The following MUST remain stable within a compatible interface version:
+
+interface identity;
+
+function identity;
+
+semantic parameter types;
+
+result semantics;
+
+ownership rules;
+
+lifetime rules;
+
+error identities;
+
+required capability semantics.
+
+
+Implementation internals MAY change freely.
+
+
+---
+
+36. Extension Profiles
+
+ULABI Core MUST remain extensible without continuously expanding the Core.
+
+Profiles MAY define:
+
+Memory
+Security
+Async
+Streaming
+Zero-Copy
+Shared-Memory
+Distributed
+Hardware
+GPU
+Tensor
+Real-Time
+Embedded
+Observability
+Debugging
+Safety-Critical
+Verification
+Reliability
+Self-Healing
+
+A profile MUST:
+
+1. have a stable identity;
+
+
+2. declare its required Core version;
+
+
+3. define additional interfaces;
+
+
+4. define additional types;
+
+
+5. define compatibility rules;
+
+
+6. define conformance tests;
+
+
+7. define failure behavior.
+
+
+
+
+---
+
+37. Profile Isolation
+
+An implementation claiming:
+
+ULABI Core
+
+MUST NOT automatically claim support for optional profiles.
 
 For example:
 
-I64 != Handle
-I64 != Pointer
-Bytes != String
+ULABI Core       ✓
+ULABI Security   ✓
+ULABI Async      ✗
+ULABI Distributed ✓
 
-unless an explicit conversion exists.
+is valid.
 
-
----
-
-111. Memory Safety
-
-The ABI boundary MUST preserve memory safety.
-
-Invalid external values MUST NOT permit unauthorized memory access.
+Conformance MUST therefore be capability/profile based rather than a single binary "ULABI compatible" claim.
 
 
 ---
 
-112. Capability Safety
+38. Validation
 
-A function requiring a capability MUST verify that capability before performing the protected operation.
+A ULABI implementation MUST validate externally supplied interface metadata before trusting it.
+
+Validation MUST include, as applicable:
+
+identifier validity;
+
+version validity;
+
+type validity;
+
+function signature validity;
+
+capability declarations;
+
+ownership declarations;
+
+profile requirements;
+
+compatibility constraints.
 
 
----
-
-113. Resource Exhaustion
-
-Implementations SHOULD impose resource limits.
-
-Potential limits include:
-
-Memory
-CPU
-Handles
-Message Size
-Call Depth
-Streams
-Execution Time
-
-
----
-
-114. Call Depth
-
-Implementations SHOULD protect against unbounded recursive ABI calls.
-
-A call-depth limit MAY produce:
-
-ResourceExhausted
-
-or an equivalent error.
+Malformed contracts MUST be rejected deterministically.
 
 
 ---
 
-115. ABI Reentrancy Attacks
+39. Security Boundary
 
-Security-sensitive implementations SHOULD account for reentrant callbacks and unexpected nested calls.
+ULABI Core treats every external boundary as potentially untrusted unless the applicable security profile establishes trust.
 
-State MUST NOT be left in an invalid security state.
+An implementation MUST NOT assume that:
 
+same machine
 
----
+means:
 
-116. Deterministic Encoding
+trusted component
 
-Canonical ABI encodings SHOULD be deterministic.
+Likewise:
 
-Given the same logical value and same encoding profile:
+same process
 
-Value A
-   |
-Encoder
-   |
-Bytes X
+does not automatically imply that all ULABI data is valid.
 
-must produce the same canonical byte sequence.
+Detailed security requirements belong to:
 
-
----
-
-117. Canonical Decoding
-
-A decoder MUST reject malformed canonical encodings.
-
-Where multiple encodings are permitted by an extension, the extension MUST define equivalence rules.
+docs/security/security-model.md
 
 
 ---
 
-118. ABI Serialization Boundary
+40. Memory Safety
 
-Serialization is separate from local function calling.
+Implementations MUST prevent invalid boundary behavior such as:
 
-The Core ABI SHOULD define shared semantic types while allowing separate serialization profiles.
+use-after-free;
 
-This prevents the Core from becoming dependent on one network protocol.
+double release;
+
+invalid ownership transfer;
+
+out-of-bounds access;
+
+incompatible type interpretation;
+
+lifetime violations.
 
 
----
+The Core defines the contract.
 
-119. Distributed ABI
-
-Distributed ABI functionality belongs to a separate profile.
-
-A distributed implementation MUST account for:
-
-Latency
-Timeout
-Network Failure
-Authentication
-Authorization
-Serialization
-Partial Failure
-Retry
-Cancellation
+The implementation chooses the mechanism.
 
 
 ---
 
-120. Failure Semantics
+41. Representation Validation
 
-A ULABI function MUST have defined failure behaviour.
+Before interpreting boundary data, an implementation MUST establish that the representation satisfies the applicable ULABI schema.
 
-Failure MUST NOT leave the ABI boundary in an unspecified state.
-
-
----
-
-121. Atomicity
-
-A function MAY declare itself atomic.
-
-If not declared atomic, callers MUST NOT assume that partial execution can be rolled back.
+An implementation MUST NOT reinterpret arbitrary bytes as a valid ULABI object without validation where validation is required.
 
 
 ---
 
-122. Transaction Boundaries
+42. Canonical Representation
 
-Transactions belong to an extension profile.
+Where ULABI defines a canonical representation, equivalent semantic values MUST have the same canonical representation.
 
-If transactional behaviour is exposed, the interface MUST define:
+Canonical representation is necessary for:
 
-Begin
-Prepare
-Commit
-Rollback
+hashing;
+
+signing;
+
+comparison;
+
+caching;
+
+ABI verification;
+
+deterministic serialization;
+
+reproducible builds.
+
+
+
+---
+
+43. ABI Hashing
+
+A ULABI interface MAY have a canonical ABI digest.
+
+The digest SHOULD be derived from canonical semantic metadata rather than implementation machine code.
+
+Conceptually:
+
+Interface
+   ↓
+Canonical Contract
+   ↓
+Canonical Encoding
+   ↓
+Hash
+   ↓
+ABI Identity / Verification
+
+Changing a semantically significant field MUST change the digest.
+
+Changes that do not alter the contract SHOULD NOT alter the semantic ABI identity.
+
+
+---
+
+44. Symbol Resolution
+
+The mapping from source-language symbols to ULABI identities MUST be deterministic.
+
+ULABI Core does not mandate a particular source-level name mangling algorithm.
+
+Instead:
+
+Source Symbol
+      ↓
+Language Adapter
+      ↓
+ULABI Symbol Identity
+      ↓
+Provider
+
+Detailed rules belong to:
+
+docs/interoperability/name-mangling.md
+docs/interoperability/symbol-resolution.md
+
+
+---
+
+45. Language Adapters
+
+Every language integration MUST have a translation layer.
+
+Conceptually:
+
+Language
+   │
+   ▼
+Language Adapter
+   │
+   ▼
+ULABI Contract
+   │
+   ▼
+ULABI Implementation
+
+The adapter is responsible for mapping:
+
+types;
+
+calls;
+
+errors;
+
+ownership;
+
+lifetimes;
+
+effects;
+
+capabilities;
+
+execution semantics.
+
+
+ULABI Core remains independent of the language.
+
+
+---
+
+46. Foreign Function Interface
+
+A language MAY expose ULABI functions through its native FFI.
+
+The FFI implementation MUST preserve the ULABI contract.
+
+It MUST NOT silently change:
+
+ownership;
+
+lifetime;
+
+error semantics;
+
+integer width;
+
+string encoding;
+
+calling semantics.
+
+
+Detailed requirements belong to:
+
+docs/interoperability/foreign-function-interface.md
+
+
+---
+
+47. ABI Boundary Safety
+
+An implementation MUST treat boundary conversion as a security and correctness boundary.
+
+Conversion code MUST validate:
+
+Type
+Size
+Alignment
+Lifetime
+Ownership
+Range
+Encoding
+Capability
 
 where applicable.
 
 
 ---
 
-123. Self-Healing Boundary
+48. Alignment
 
-Self-healing belongs to the Reliability / Self-Healing Profile.
+ULABI Core does not require a universal native-memory alignment.
 
-The Core ABI only provides the stable primitives necessary to represent:
+Boundary formats MUST define their own alignment requirements where applicable.
 
-Health
-Failure
-State
-Error
-Recovery Result
+A platform adapter MUST translate between:
 
-The Core MUST NOT require autonomous self-modification.
+ULABI alignment
 
+and:
 
----
+native alignment
 
-124. Safe Recovery Principle
-
-Any self-healing implementation built on ULABI MUST obey:
-
-Detect
-  ↓
-Diagnose
-  ↓
-Policy Check
-  ↓
-Recover
-  ↓
-Verify
-  ↓
-Healthy
-
-If recovery fails:
-
-Rollback
-  ↓
-Escalate
+without producing undefined behavior.
 
 
 ---
 
-125. No Unauthorized Self-Modification
+49. Integer Semantics
 
-ULABI does not authorize arbitrary code modification.
+ULABI integer types MUST have explicit:
 
-A self-healing implementation MUST operate within explicit policy and capability boundaries.
+signedness;
+
+width;
+
+range;
+
+overflow semantics;
+
+encoding;
+
+byte order where serialized.
 
 
----
-
-126. Conformance
-
-A Core ABI implementation is conformant only if it passes the applicable Core ABI conformance tests.
-
-At minimum, tests SHOULD cover:
-
-Identity
-Version
-Primitive Types
-Composite Types
-Function Calls
-Arguments
-Returns
-Errors
-Ownership
-Alignment
-Encoding
-Validation
-Compatibility
+An implementation MUST NOT substitute architecture-dependent int semantics for a fixed-width ULABI type without an explicit compatible mapping.
 
 
 ---
 
-127. Cross-Language Conformance
+50. Floating-Point Semantics
 
-At least two independently implemented language bindings SHOULD be tested against the same Core ABI contract.
+ULABI floating-point contracts MUST define supported representation and exceptional values.
 
-Example:
+Where floating-point behavior is exposed, the implementation MUST document handling of:
 
-Language A
-    |
-    v
-ULABI Core
-    ^
-    |
-Language B
+NaN
++Infinity
+-Infinity
++0
+-0
 
-The test MUST verify actual interoperability.
+The canonical encoding MUST be specified by the type/encoding specification.
 
 
 ---
 
-128. Cross-Architecture Conformance
+51. String Semantics
 
-Where an architecture mapping exists, conformance SHOULD be tested on more than one processor architecture.
+ULABI Core treats strings as semantic Unicode text.
+
+The canonical interchange representation SHOULD use UTF-8.
+
+A string boundary MUST define:
+
+encoding;
+
+validity;
+
+length semantics;
+
+maximum size;
+
+invalid sequence behavior.
+
+
+A byte buffer MUST NOT be silently interpreted as a string.
 
 
 ---
 
-129. Negative Testing
+52. Bytes
 
-Conformance tests MUST include invalid cases.
+Bytes represents arbitrary binary data.
+
+It MUST remain semantically distinct from:
+
+String
+
+because byte sequences do not necessarily represent valid text.
+
+
+---
+
+53. Collections
+
+Collection contracts MUST specify:
+
+element type;
+
+cardinality;
+
+ordering;
+
+ownership;
+
+lifetime;
+
+mutation;
+
+maximum supported size.
+
+
+A collection MUST NOT expose an implementation-specific internal iterator as the universal ABI contract.
+
+
+---
+
+54. Records
+
+Records MUST define stable field identities.
+
+A record contract MUST specify:
+
+FieldID
+FieldType
+Required/Optional
+Default semantics
+Unknown-field behavior
+
+Field order MUST NOT be semantically significant unless the specific type contract declares it significant.
+
+
+---
+
+55. Variants
+
+Variants MUST define stable variant identities.
+
+Unknown variants MUST have explicitly defined compatibility behavior.
+
+An implementation MUST NOT reinterpret an unknown variant as a different known variant.
+
+
+---
+
+56. Option
+
+Option<T> has exactly two semantic states:
+
+None
+Some(T)
+
+None MUST NOT be represented through an undocumented sentinel value.
+
+
+---
+
+57. Result
+
+Result<T,E> has exactly two semantic states:
+
+Ok(T)
+Err(E)
+
+The provider MUST NOT return an Err value while simultaneously claiming successful Ok semantics.
+
+
+---
+
+58. Resource Semantics
+
+Resources that cannot safely be represented as ordinary values SHOULD cross the boundary using handles or explicit resource profiles.
+
+Examples include:
+
+File
+Socket
+GPU Buffer
+Device
+Process
+Shared Memory
+Capability
+Transaction
+
+Resource cleanup MUST be deterministic where required by the resource contract.
+
+
+---
+
+59. Cancellation
+
+Cancellable operations MUST explicitly define cancellation behavior.
+
+Cancellation MAY occur:
+
+Before execution
+During execution
+After partial progress
+During cleanup
+
+A cancelled operation MUST NOT falsely report successful completion.
+
+Partial effects MUST be specified.
+
+
+---
+
+60. Idempotency
+
+Functions MAY declare themselves:
+
+Idempotent
+
+or:
+
+NonIdempotent
+
+An implementation MUST NOT claim idempotency if repeating the operation can alter observable semantics.
+
+This becomes especially important for distributed profiles.
+
+
+---
+
+61. Blocking
+
+Blocking behavior MUST be explicit.
+
+An operation declared:
+
+NonBlocking
+
+MUST NOT perform unbounded blocking on behalf of the consumer.
+
+Blocking behavior belongs in execution metadata.
+
+
+---
+
+62. Panic / Fatal Failure
+
+An implementation MUST NOT terminate the entire host process merely because a ULABI consumer supplied invalid ordinary input unless the contract explicitly defines process-fatal behavior.
+
+Recoverable boundary failures SHOULD be represented using ULABI errors.
+
+Memory corruption and unrecoverable runtime failures MAY require stronger isolation or process termination.
+
+
+---
+
+63. Process Isolation
+
+ULABI Core does not require process isolation.
+
+However, an implementation MAY place ULABI components into separate processes to provide:
+
+fault isolation;
+
+security isolation;
+
+runtime isolation;
+
+resource limits.
+
+
+The semantic contract MUST remain unchanged.
+
+
+---
+
+64. Deterministic Failure
+
+Invalid ULABI requests MUST produce deterministic failure classes where practical.
 
 Examples:
 
-Invalid Type
-Invalid Version
-Invalid Length
-Invalid Offset
-Invalid Alignment
-Invalid Handle
-Invalid Capability
-Malformed Encoding
-Unsupported Feature
+InvalidInterface
+UnsupportedVersion
+InvalidType
+InvalidArgument
+InvalidOwnership
+InvalidLifetime
+MissingCapability
+UnsupportedProfile
+MalformedEncoding
+ResourceUnavailable
+ExecutionFailure
 
-The implementation MUST fail safely.
-
-
----
-
-130. Fuzz Testing
-
-Core ABI parsers SHOULD be fuzz tested.
-
-Particular targets:
-
-Type Descriptors
-Interface Metadata
-Function Signatures
-Serialized Values
-Handles
-Lengths
-Offsets
-Version Information
+The exact standardized error registry belongs to the error specification.
 
 
 ---
 
-131. ABI Differential Testing
+65. Compatibility
 
-Different implementations SHOULD be tested against each other.
+Compatibility MUST be evaluated at the semantic contract level.
+
+Two implementations are compatible only if they agree on all contract elements required for the operation.
+
+Compatibility MUST NOT be inferred solely from:
+
+matching source names;
+
+matching machine architecture;
+
+matching compiler;
+
+matching memory layout;
+
+successful linkage.
+
+
+
+---
+
+66. Backward Compatibility
+
+A newer provider MAY add:
+
+new optional functions;
+
+new optional fields;
+
+new optional profiles;
+
+new capabilities;
+
+
+provided existing valid consumers continue to operate according to the prior contract.
+
+Removing or changing mandatory semantics requires a new incompatible interface version.
+
+
+---
+
+67. Forward Compatibility
+
+Consumers SHOULD ignore explicitly extensible metadata they do not understand where the relevant contract permits it.
+
+Unknown mandatory semantics MUST cause rejection rather than silent reinterpretation.
+
+
+---
+
+68. Capability Negotiation
+
+Before using an optional feature, the consumer MAY negotiate:
+
+Core Version
+Profile
+Feature
+Capability
+Encoding
+Execution Mode
+
+Negotiation MUST NOT grant authorization.
+
+Capability negotiation determines support.
+
+Security authorization determines permission.
+
+
+---
+
+69. ABI Negotiation Model
+
+Conceptually:
+
+Consumer
+   │
+   ├── Core version?
+   │
+   ├── Profile support?
+   │
+   ├── Feature support?
+   │
+   ├── Encoding support?
+   │
+   └── Capability requirements?
+          │
+          ▼
+       Provider
+          │
+          ▼
+     Negotiated Contract
+
+The negotiated contract MUST be explicit and reproducible.
+
+
+---
+
+70. Conformance
+
+An implementation claiming ULABI Core conformance MUST implement all mandatory Core requirements applicable to its declared execution mode.
+
+Conformance MUST be testable.
+
+A conformance result SHOULD identify:
+
+ULABI Core
+Specification Version
+Supported Profiles
+Supported Execution Modes
+Supported Types
+Supported Features
+Known Restrictions
+Test Suite Version
+
+
+---
+
+71. Conformance Levels
+
+The future ULABI conformance system SHOULD distinguish at least:
+
+Core-Minimal
+Core-Standard
+Core-Extended
+
+Profiles are reported independently.
 
 Example:
 
-Implementation A
-       |
-       +---- encode ----+
-                        |
-                        v
-                 Implementation B
-                        |
-                        +---- decode
-
-The decoded semantic value MUST match the original.
+ULABI Core              PASS
+ULABI Types             PASS
+ULABI Memory            PASS
+ULABI Security          PASS
+ULABI Async             PARTIAL
+ULABI Distributed       NOT IMPLEMENTED
 
 
 ---
 
-132. ABI Round-Trip Testing
+72. Reference Test Categories
 
-The following property SHOULD hold:
+The Core conformance suite MUST eventually test:
 
-decode(encode(value)) == value
+Identity
 
-for all values permitted by the applicable type contract.
+interface identity;
+
+function identity;
+
+type identity.
+
+
+Types
+
+primitive values;
+
+structured values;
+
+option;
+
+result;
+
+variants;
+
+records.
+
+
+Calls
+
+parameters;
+
+results;
+
+invalid arguments;
+
+ownership.
+
+
+Memory
+
+ownership transfer;
+
+borrowing;
+
+lifetime;
+
+release.
+
+
+Errors
+
+error identity;
+
+error propagation;
+
+malformed errors.
+
+
+Compatibility
+
+compatible versions;
+
+incompatible versions;
+
+unknown optional fields;
+
+unknown mandatory fields.
+
+
+Security
+
+invalid capability;
+
+unauthorized invocation;
+
+malformed boundary input.
+
+
+Determinism
+
+canonical representations;
+
+deterministic metadata;
+
+ABI hashing.
+
 
 
 ---
 
-133. ABI Compatibility Testing
+73. Required Conformance Properties
 
-For every compatible version:
+A conforming implementation MUST demonstrate:
 
-Old Producer → New Consumer
-New Producer → Old Consumer
+No undocumented ABI dependency
+No ambiguous ownership
+No ambiguous lifetime
+No silent type reinterpretation
+No silent version downgrade
+No silent capability escalation
+No undefined boundary representation
+No hidden remote execution
 
-SHOULD be tested where forward and backward compatibility are claimed.
-
-
----
-
-134. ABI Difference Detection
-
-Tooling SHOULD be able to compare two interface definitions:
-
-ULABI Interface v1
-        |
-        v
-ABI Diff
-        |
-        v
-ULABI Interface v2
-
-The tool SHOULD identify:
-
-breaking changes;
-
-compatible additions;
-
-removed functions;
-
-changed types;
-
-changed ownership;
-
-changed effects;
-
-changed alignment;
-
-changed calling conventions.
-
+where the property applies to the declared profile.
 
 
 ---
 
-135. ABI Registry
+74. Reference Implementation Requirements
 
-ULABI MAY provide a registry for:
+A reference implementation SHOULD be:
 
-Interface IDs
-Type IDs
-Version Information
-Profiles
-Extensions
-Capability Names
-Error Codes
+independent of any one language;
 
-Registry infrastructure MUST NOT become a mandatory runtime dependency.
+independently testable;
+
+deterministic;
+
+instrumentable;
+
+capable of running the conformance suite;
+
+suitable for interoperability testing.
+
+
+The reference implementation is informative unless a future governance decision explicitly makes a particular artifact normative.
 
 
 ---
 
-136. Namespace Rules
+75. Required Machine-Readable Schemas
 
-Public identifiers SHOULD use namespaces to avoid collisions.
+The Core ABI requires machine-readable definitions for at least:
+
+Interface
+Function
+Parameter
+Type
+Field
+Variant
+Error
+Capability
+Profile
+Version
+ExecutionSemantics
+Effect
+Ownership
+Lifetime
+ConformanceResult
+
+Recommended location:
+
+schemas/
+
+
+---
+
+76. Required Core Schema Files
+
+The following schemas SHOULD exist:
+
+schemas/interface.schema.json
+schemas/function.schema.json
+schemas/parameter.schema.json
+schemas/type.schema.json
+schemas/field.schema.json
+schemas/variant.schema.json
+schemas/error.schema.json
+schemas/capability.schema.json
+schemas/profile.schema.json
+schemas/version.schema.json
+schemas/execution-semantics.schema.json
+schemas/effect.schema.json
+schemas/ownership.schema.json
+schemas/lifetime.schema.json
+schemas/conformance-result.schema.json
+
+Schema evolution MUST follow ULABI versioning rules.
+
+
+---
+
+77. Required Core Code Modules
+
+The standard itself is language-neutral, but reference implementations require concrete modules.
+
+The reference implementation SHOULD be divided into independent modules:
+
+core/
+├── identity
+├── version
+├── interface
+├── function
+├── parameter
+├── type
+├── value
+├── record
+├── variant
+├── option
+├── result
+├── handle
+├── ownership
+├── lifetime
+├── call
+├── result-return
+├── error
+├── effect
+├── capability
+├── execution
+├── validation
+├── compatibility
+├── negotiation
+├── encoding
+├── decoding
+├── canonicalization
+├── hashing
+└── conformance
+
+The exact programming language is deliberately unspecified.
+
+
+---
+
+78. Recommended Rust Reference Module Layout
+
+If the first reference implementation is Rust, it SHOULD use:
+
+reference/
+└── rust/
+    └── ulabi-core/
+        ├── Cargo.toml
+        └── src/
+            ├── lib.rs
+            ├── identity.rs
+            ├── version.rs
+            ├── interface.rs
+            ├── function.rs
+            ├── parameter.rs
+            ├── types.rs
+            ├── values.rs
+            ├── records.rs
+            ├── variants.rs
+            ├── option.rs
+            ├── result.rs
+            ├── handles.rs
+            ├── ownership.rs
+            ├── lifetimes.rs
+            ├── call.rs
+            ├── errors.rs
+            ├── effects.rs
+            ├── capabilities.rs
+            ├── execution.rs
+            ├── validation.rs
+            ├── compatibility.rs
+            ├── negotiation.rs
+            ├── encoding.rs
+            ├── decoding.rs
+            ├── canonical.rs
+            ├── hashing.rs
+            └── conformance.rs
+
+This is a reference implementation, not part of the normative ULABI language specification.
+
+
+---
+
+79. Adapter Module Requirements
+
+Language adapters SHOULD be separate from Core.
+
+Recommended conceptual structure:
+
+implementations/
+├── c/
+├── cpp/
+├── rust/
+├── go/
+├── python/
+├── java/
+├── swift/
+├── kotlin/
+├── fortran/
+├── ada/
+├── zamani/
+└── sankofa/
+
+The last two are implementation targets only.
+
+They MUST NOT influence the Core specification.
+
+
+---
+
+80. Adapter Responsibilities
+
+Each adapter MUST handle:
+
+native types
+      ↓
+ULABI types
+
+native calling convention
+      ↓
+ULABI call
+
+native errors
+      ↓
+ULABI errors
+
+native ownership
+      ↓
+ULABI ownership
+
+native lifetime
+      ↓
+ULABI lifetime
+
+native capabilities
+      ↓
+ULABI capabilities
+
+The adapter MUST NOT redefine ULABI semantics.
+
+
+---
+
+81. Testing Architecture
+
+Tests SHOULD be separated into:
+
+tests/
+├── core/
+├── identity/
+├── types/
+├── calls/
+├── ownership/
+├── lifetimes/
+├── errors/
+├── compatibility/
+├── negotiation/
+├── encoding/
+├── security/
+├── determinism/
+├── fuzz/
+└── interoperability/
+
+Conformance tests SHOULD be independent of any particular implementation language.
+
+
+---
+
+82. Cross-Language Interoperability Tests
+
+The conformance system SHOULD eventually test combinations such as:
+
+C ↔ Rust
+C ↔ Go
+Rust ↔ C++
+Go ↔ Python
+Java ↔ C
+Swift ↔ Rust
+Kotlin ↔ C
+Fortran ↔ C
+Ada ↔ C
+Zamani ↔ Rust
+Sankofa ↔ C
+
+These are validation targets.
+
+They are not dependencies of the standard.
+
+
+---
+
+83. ABI Golden Tests
+
+The repository SHOULD contain canonical ABI fixtures.
 
 Example:
 
-org.example.calculator
+tests/golden/
+├── interfaces/
+├── functions/
+├── types/
+├── errors/
+├── capabilities/
+└── versions/
 
-ULABI itself SHOULD reserve its own namespace.
-
-
----
-
-137. Vendor Extensions
-
-Vendors MAY define extensions.
-
-Vendor extensions MUST NOT alter Core semantics.
-
-Extensions SHOULD use separate namespaces.
+A conforming implementation MUST reproduce the expected canonical representation where the test is normative.
 
 
 ---
 
-138. Experimental Features
+84. Fuzz Testing
 
-Experimental ABI features MUST be explicitly marked.
+ULABI implementations SHOULD fuzz:
 
-Experimental features MUST NOT be presented as stable ULABI Core.
+type decoders;
+
+interface metadata;
+
+function signatures;
+
+malformed values;
+
+version negotiation;
+
+capability declarations;
+
+canonical encodings.
 
 
----
-
-139. ABI Stability
-
-The Core ABI MUST be treated as a long-term compatibility contract.
-
-Changes should be conservative.
-
-Before changing a Core feature, the project SHOULD demonstrate:
-
-Use Cases
-Implementation Experience
-Cross-Language Testing
-Security Review
-Compatibility Analysis
+Fuzzing MUST NOT replace deterministic conformance tests.
 
 
 ---
 
-140. Core Minimalism
+85. Security Testing
 
-A feature SHOULD enter the Core only if it is:
+Security tests MUST include:
 
-Universal
-Necessary
-Stable
-Implementable
-Testable
-Language-Neutral
-Architecture-Neutral
-
-Otherwise it SHOULD remain an extension.
-
-
----
-
-141. Implementation Freedom
-
-ULABI does not dictate implementation strategy.
-
-An implementation MAY use:
-
-AOT Compiler
-JIT Compiler
-Interpreter
-Virtual Machine
-Native Runtime
-Garbage Collection
-Reference Counting
-Manual Memory Management
-Ownership Checking
-Hybrid Runtime
-
-provided that the ULABI contract is preserved.
+Malformed interface
+Malformed type
+Malformed length
+Invalid ownership
+Expired lifetime
+Unauthorized capability
+Unknown mandatory feature
+Invalid version
+Resource exhaustion
+Oversized input
+Recursive type exhaustion
 
 
 ---
 
-142. Reference Implementation
+86. Resource Limits
 
-A reference implementation MAY be created.
+ULABI Core implementations SHOULD expose configurable limits for:
 
-It MUST serve as:
+maximum message size;
 
-Example
-Test Target
-Interoperability Baseline
+maximum nesting depth;
 
-It MUST NOT become the definition of ULABI.
+maximum collection length;
 
-The specification remains authoritative.
+maximum string length;
+
+maximum allocation;
+
+maximum execution duration;
+
+maximum recursion depth.
 
 
----
-
-143. Reference ABI Architecture
-
-A conceptual reference implementation may use:
-
-+--------------------------------------+
-|           ULABI Interface            |
-+--------------------------------------+
-|       Metadata / Type System         |
-+--------------------------------------+
-|       Validation / Compatibility     |
-+--------------------------------------+
-|       Memory / Ownership Layer       |
-+--------------------------------------+
-|       Calling Convention Layer       |
-+--------------------------------------+
-|       Architecture Adapter           |
-+--------------------------------------+
-|       Native Runtime / OS            |
-+--------------------------------------+
+A resource limit failure MUST produce an explicit failure rather than undefined behavior.
 
 
 ---
 
-144. Core ABI Invariants
+87. No Hidden ABI State
 
-The following invariants MUST hold.
+A ULABI function MUST NOT require undocumented state such as:
+
+global mutable variables
+hidden thread-local contracts
+undocumented registers
+implicit process-global handles
+undocumented environment variables
+
+unless the applicable profile explicitly defines such state.
+
+
+---
+
+88. ABI Observability
+
+A conforming implementation SHOULD be able to expose diagnostic information including:
+
+Interface ID
+Function ID
+Version
+Execution Mode
+Profile
+Capability Requirements
+Failure Code
+
+Observability MUST NOT expose sensitive data unless authorized.
+
+
+---
+
+89. Debugging
+
+Debuggers MAY map:
+
+ULABI Interface
+ULABI Function
+ULABI Type
+ULABI Error
+
+to native debugging information.
+
+Debugging metadata MUST NOT change runtime ABI semantics.
+
+Detailed debugging requirements belong to the observability and tooling specifications.
+
+
+---
+
+90. Tooling Integration
+
+The Core ABI MUST be consumable by:
+
+Compiler
+Linker
+Loader
+Validator
+Debugger
+Profiler
+ABI-diff tool
+Conformance tool
+Schema generator
+Binding generator
+
+These tools MUST consume the normative contract rather than reverse-engineering implementation details.
+
+
+---
+
+91. ABI Difference Analysis
+
+A future ABI-diff tool SHOULD classify changes as:
+
+Compatible
+Conditionally Compatible
+Profile Extension
+Breaking
+Security Significant
+Representation Significant
+Semantic Significant
+
+The classification MUST be based on the contract.
+
+
+---
+
+92. Loader Requirements
+
+A ULABI-aware loader MAY verify:
+
+Interface ID
+Version
+Required Profiles
+ABI Digest
+Required Capabilities
+Platform Requirements
+
+The loader MUST reject incompatible mandatory requirements.
+
+
+---
+
+93. Linker Requirements
+
+A ULABI-aware linker MAY resolve:
+
+InterfaceID + FunctionID
+
+rather than relying solely on native symbol names.
+
+Native linkage remains an implementation mechanism.
+
+
+---
+
+94. Compiler Requirements
+
+A compiler targeting ULABI MUST preserve:
+
+semantic types;
+
+calling contracts;
+
+ownership;
+
+lifetimes;
+
+error semantics;
+
+effect declarations;
+
+capability declarations.
+
+
+Compiler optimization MUST NOT alter observable ULABI semantics.
+
+
+---
+
+95. Runtime Requirements
+
+A runtime implementing ULABI MUST provide the mechanisms necessary to honor the declared contract.
+
+It MAY implement those mechanisms using:
+
+native runtime facilities;
+
+operating-system facilities;
+
+custom runtime facilities;
+
+hardware facilities.
+
+
+The choice is implementation-specific.
+
+
+---
+
+96. Core Invariants
+
+The following invariants are mandatory:
 
 Invariant 1 — Identity
 
-Two different interfaces MUST NOT intentionally share the same stable interface identifier.
+Every externally visible interface has a stable identity.
 
-Invariant 2 — Type Safety
+Invariant 2 — Type
 
-A value MUST NOT be interpreted as an incompatible type.
+Every boundary value has a known semantic type.
 
-Invariant 3 — Bounds Safety
+Invariant 3 — Ownership
 
-An ABI-provided length or offset MUST NOT permit an out-of-bounds access.
+Every transferable resource has explicit ownership semantics.
 
-Invariant 4 — Ownership
+Invariant 4 — Lifetime
 
-A component MUST NOT release a resource it does not own.
+Every reference has a defined lifetime.
 
-Invariant 5 — Lifetime
+Invariant 5 — Capability
 
-A component MUST NOT access an expired resource.
+Privileged operations have explicit capability requirements.
 
-Invariant 6 — Capability
+Invariant 6 — Version
 
-A protected operation MUST NOT execute without the required authority.
+Every interface has version semantics.
 
-Invariant 7 — Version
+Invariant 7 — Error
 
-An incompatible version MUST NOT silently be treated as compatible.
+Failure is represented by an explicit contract.
 
-Invariant 8 — Determinism
+Invariant 8 — Compatibility
 
-Canonical encoding MUST be deterministic.
+Compatible interfaces preserve existing semantics.
 
-Invariant 9 — Independence
+Invariant 9 — Validation
 
-Core semantics MUST NOT depend on a particular programming language.
+Untrusted boundary data is validated before unsafe interpretation.
 
-Invariant 10 — Architecture Neutrality
+Invariant 10 — Independence
 
-Core semantics MUST NOT depend on a particular processor architecture.
-
-
----
-
-145. Core ABI State Machine
-
-A component implementing the Core ABI SHOULD follow:
-
-+-------------+
-             | DISCOVERED  |
-             +------+------+
-                    |
-                    v
-             +-------------+
-             |  VERIFIED   |
-             +------+------+
-                    |
-                    v
-             +-------------+
-             |   LOADED    |
-             +------+------+
-                    |
-                    v
-             +-------------+
-             | INITIALIZED |
-             +------+------+
-                    |
-                    v
-             +-------------+
-             |    READY    |
-             +------+------+
-                    |
-                    v
-             +-------------+
-             |   RUNNING   |
-             +------+------+
-                    |
-          +---------+---------+
-          |                   |
-          v                   v
-      STOPPING             FAILED
-          |                   |
-          v                   v
-       STOPPED             RECOVERY
-                              |
-                         +----+----+
-                         |         |
-                         v         v
-                      HEALTHY   ESCALATED
+ULABI semantics do not depend on a particular language or implementation.
 
 
 ---
 
-146. ABI Call Lifecycle
+97. Failure Model
 
-A normal call follows:
+Core failures include:
 
-Caller
-  |
-  v
-Resolve Interface
-  |
-  v
-Validate Version
-  |
-  v
-Validate Signature
-  |
-  v
-Validate Capabilities
-  |
-  v
-Validate Arguments
-  |
-  v
-Invoke
-  |
-  v
-Validate Return
-  |
-  v
-Transfer Ownership
-  |
-  v
-Return
+InvalidInterface
+UnsupportedVersion
+InvalidFunction
+InvalidType
+InvalidValue
+InvalidArgument
+InvalidOwnership
+InvalidLifetime
+MissingCapability
+UnsupportedProfile
+MalformedEncoding
+ResourceLimitExceeded
+ExecutionFailure
+Cancelled
+Timeout
+Unavailable
+
+The standardized error registry MUST assign stable identities to these classes before declaring Core 1.0 final.
 
 
 ---
 
-147. ABI Failure Lifecycle
+98. Recovery
 
-Call
- |
- v
-Validation
- |
- +---- invalid ----> Error
- |
- v
-Execution
- |
- +---- failure ----> Error
- |
- v
-Return
+ULABI Core itself does not define autonomous recovery.
 
-A failure MUST NOT silently become an unrelated success.
+An implementation MAY recover from a failure where the applicable contract permits recovery.
+
+Recovery MUST NOT silently alter the semantic contract.
+
+Advanced recovery belongs to:
+
+docs/reliability/
 
 
 ---
 
-148. ABI Security Lifecycle
+99. Self-Healing Boundary
 
-Discover
-   |
-Verify Identity
-   |
-Verify Integrity
-   |
-Verify Version
-   |
-Verify Capability
-   |
-Verify Policy
-   |
-Execute
+Self-healing MUST remain an extension profile.
 
+ULABI Core MUST NOT permit arbitrary self-modification.
 
----
+A self-healing implementation MUST operate under an explicit policy:
 
-149. ABI Compatibility Lifecycle
+Failure
+   ↓
+Evidence
+   ↓
+Known Policy?
+ ┌─┴─┐
+Yes  No
+ │    │
+Recover Escalate
+ │
+Verify
+ │
+Healthy?
+ ┌─┴─┐
+Yes  No
+ │    │
+Done Rollback/Escalate
 
-Discover
-   |
-Read ABI Metadata
-   |
-Compare Versions
-   |
-Compare Profiles
-   |
-Compare Types
-   |
-Compare Functions
-   |
-Compare Security
-   |
-Compatible?
-   |
- +--+--+
- |     |
-Yes    No
- |     |
-Use   Reject
+This preserves Core determinism and security.
 
 
 ---
 
-150. ABI Contract Example
+100. Distributed Boundary
 
-Conceptual interface:
+ULABI Core remains usable locally without distributed functionality.
 
-interface Calculator {
+Distributed behavior belongs to:
 
-    add(
-        left: I64,
-        right: I64
-    ) -> Result<I64, Error>;
+docs/distributed/distributed-abi.md
 
-    subtract(
-        left: I64,
-        right: I64
-    ) -> Result<I64, Error>;
-}
-
-The source-language implementation might be:
-
-Language A:
-    add(a, b)
-
-Language B:
-    add(x, y)
-
-The names of local parameters do not matter.
-
-The ULABI contract does.
+A local implementation MUST NOT be required to implement network functionality merely to claim Core conformance.
 
 
 ---
 
-151. Memory Example
+101. Hardware Boundary
 
-Conceptual interface:
+ULABI Core MUST NOT depend on:
 
-create_buffer(
-    size: U64
-) -> Result<Owned<Buffer>, Error>;
+CPU
+GPU
+NPU
+FPGA
+Quantum processor
 
-The caller owns the resulting buffer.
-
-The implementation MUST provide a valid lifetime and release mechanism.
+Hardware-specific functionality belongs to hardware profiles.
 
 
 ---
 
-152. Borrowing Example
+102. Embedded Boundary
 
-inspect(
-    buffer: Borrowed<Buffer>
-) -> Result<Inspection, Error>;
+Embedded systems MAY implement a reduced ULABI Core profile where explicitly permitted.
 
-The function may inspect the buffer.
+They MUST document:
 
-It MUST NOT:
+Unsupported Features
+Resource Limits
+Supported Types
+Supported Execution Modes
 
-free it;
+They MUST NOT silently claim unsupported Core features.
 
-retain it beyond the permitted lifetime;
 
-modify it without permission.
+---
+
+103. Real-Time Boundary
+
+Real-time guarantees MUST be declared by a real-time profile.
+
+ULABI Core does not itself guarantee:
+
+bounded latency
+deadline completion
+priority inheritance
+hard real-time scheduling
+
+
+---
+
+104. Safety-Critical Boundary
+
+Safety-critical use requires an explicit safety profile.
+
+ULABI Core does not by itself constitute certification for:
+
+aviation;
+
+automotive;
+
+medical;
+
+industrial;
+
+nuclear;
+
+railway;
+
+other safety-critical domains.
 
 
 
 ---
 
-153. Capability Example
+105. Cryptographic Boundary
 
-read(
-    capability: FileRead,
-    file: Handle<File>
-) -> Result<Bytes, Error>;
+Cryptographic algorithms MUST NOT be hardcoded into Core unnecessarily.
 
-The handle and capability are separate concepts.
+Cryptographic agility belongs to security profiles.
 
-A handle identifies a resource.
-
-The capability authorizes an operation.
+Any cryptographic identity used for ABI verification MUST be versioned and algorithm-identified.
 
 
 ---
 
-154. Async Example
+106. Post-Quantum Readiness
 
-A future Async Profile may expose:
-
-calculate_async(
-    input: I64
-) -> Future<Result<I64, Error>>;
-
-The Core ABI does not require one particular future implementation.
+ULABI identity and verification mechanisms SHOULD permit cryptographic algorithm migration without redesigning the ABI contract.
 
 
 ---
 
-155. Cross-Language Example
+107. Implementation Independence
 
-+-------------+
-| Language A  |
-+------+------+
-       |
-       | adapter
-       v
-+-------------+
-| ULABI Core  |
-+------+------+
-       ^
-       | adapter
-       |
-+------+------+
-| Language B  |
-+-------------+
+Two conforming implementations MUST be allowed to differ internally in:
 
-Language A and Language B remain independent.
+memory management
+object representation
+register allocation
+stack layout
+compiler architecture
+runtime
+operating system
+CPU
+transport
+optimization
+
+provided observable ULABI semantics remain conformant.
 
 
 ---
 
-156. Cross-Process Example
+108. Integration Contract
 
-Process A
-    |
-    | ULABI IPC
-    |
-Process B
+This document integrates with the following specifications.
 
-The processes MAY use completely different runtimes.
+Mandatory foundational integration
 
+ULABI-DESIGN.md
+ULABI-SPEC.md
+ULABI-VERSIONING.md
+ULABI-GOVERNANCE.md
 
----
+ABI integration
 
-157. Cross-Machine Example
-
-Machine A
-    |
-ULABI Distributed Profile
-    |
-Transport
-    |
-Machine B
-
-The distributed profile adds networking semantics without changing the fundamental Core ABI model.
-
-
----
-
-158. Hardware Example
-
-Application
-    |
-ULABI
-    |
-Hardware Capability
-    |
-GPU / NPU / FPGA / Accelerator
-
-Hardware-specific details belong to hardware profiles.
-
-
----
-
-159. Embedded Example
-
-Embedded Application
-        |
-      ULABI
-        |
-    Device Driver
-        |
-      Hardware
-
-The Core should remain usable even where no traditional operating system exists.
-
-
----
-
-160. Future Architecture Example
-
-ULABI should allow future architectures to define:
-
-ULABI Core
-     |
-Future Architecture Mapping
-     |
-Native Execution
-
-without modifying the semantic Core.
-
-
----
-
-161. What the Core ABI Must Never Do
-
-The Core ABI MUST NOT:
-
-require one programming language;
-
-require one compiler;
-
-require one runtime;
-
-require one operating system;
-
-require one processor;
-
-require one company;
-
-require one transport;
-
-require one memory-management model;
-
-require one garbage collector;
-
-require one object model.
-
-
-
----
-
-162. What the Core ABI Must Provide
-
-The Core ABI MUST provide the foundation for:
-
-Identity
-Types
-Calls
-Data
-Errors
-Memory Contracts
-Versioning
-Compatibility
-Validation
-Security Boundaries
-
-
----
-
-163. Implementation Priority
-
-The first implementation SHOULD build the Core in this order:
-
-1. ABI Metadata
-       |
-2. Interface Identity
-       |
-3. Type Identity
-       |
-4. Primitive Types
-       |
-5. Composite Types
-       |
-6. Canonical Encoding
-       |
-7. Function Signatures
-       |
-8. Calling Convention
-       |
-9. Arguments
-       |
-10. Return Values
-       |
-11. Errors
-       |
-12. Ownership
-       |
-13. Validation
-       |
-14. Version Negotiation
-       |
-15. Compatibility Testing
-
-Only after these are working should advanced profiles become implementation priorities.
-
-
----
-
-164. Required Companion Specifications
-
-The following documents MUST provide deeper definitions:
-
-docs/abi/calling-convention.md
 docs/abi/data-types.md
+docs/abi/calling-convention.md
 docs/abi/memory-model.md
 docs/abi/stack-model.md
 docs/abi/register-model.md
 docs/abi/exception-model.md
 docs/abi/return-values.md
 
-These documents MUST refine the Core ABI rather than redefine it.
+Type-system integration
+
+docs/type-system/universal-types.md
+docs/type-system/type-descriptors.md
+docs/type-system/type-compatibility.md
+
+Interoperability integration
+
+docs/interoperability/language-interoperability.md
+docs/interoperability/foreign-function-interface.md
+docs/interoperability/name-mangling.md
+docs/interoperability/symbol-resolution.md
+docs/interoperability/cross-language-data.md
+
+Runtime integration
+
+docs/runtime/runtime-interface.md
+docs/runtime/process-model.md
+docs/runtime/threading.md
+docs/runtime/async-model.md
+docs/runtime/concurrency.md
+docs/runtime/resource-management.md
+
+Memory integration
+
+docs/memory/memory-safety.md
+docs/memory/ownership.md
+docs/memory/lifetimes.md
+docs/memory/allocation.md
+docs/memory/virtual-memory.md
+docs/memory/shared-memory.md
+
+Security integration
+
+docs/security/security-model.md
+docs/security/capability-security.md
+docs/security/sandboxing.md
+docs/security/authentication.md
+docs/security/authorization.md
+docs/security/zero-trust.md
+
+Compatibility integration
+
+docs/compatibility/backwards-compatibility.md
+docs/compatibility/forwards-compatibility.md
+docs/compatibility/feature-negotiation.md
+docs/compatibility/capability-discovery.md
+docs/compatibility/graceful-degradation.md
+
+Conformance integration
+
+docs/standards/conformance.md
+docs/standards/compliance-levels.md
+docs/standards/test-suite.md
+docs/standards/certification.md
+docs/standards/reference-implementations.md
 
 
 ---
 
-165. Conformance Checklist
+109. Integration Rule
 
-A Core ABI implementation SHOULD be evaluated against:
+The documents above MUST NOT redefine Core semantics inconsistently.
 
-[ ] ABI Identity
-[ ] Interface Identity
-[ ] Function Identity
-[ ] Type Identity
-[ ] Primitive Types
-[ ] Composite Types
-[ ] Canonical Encoding
-[ ] Decoding
-[ ] Alignment
-[ ] Size Rules
-[ ] Offset Rules
-[ ] Calling Convention
-[ ] Arguments
-[ ] Return Values
-[ ] Error Model
-[ ] Ownership
-[ ] Lifetimes
-[ ] Capability Metadata
-[ ] Validation
-[ ] Versioning
-[ ] Feature Negotiation
-[ ] Compatibility
-[ ] Security
-[ ] Negative Testing
-[ ] Cross-Language Testing
+The dependency direction is:
+
+ULABI-DESIGN
+      ↓
+ULABI-SPEC
+      ↓
+CORE ABI
+      ↓
+Profiles / Extensions
+      ↓
+Implementations
+      ↓
+Conformance
+
+A lower-level implementation document MUST NOT redefine a higher-level normative contract.
 
 
 ---
 
-166. Minimum Core Profile
+110. Code Integration Contract
 
-The initial ULABI Core Profile SHOULD require only:
+The reference implementation MUST map directly to the normative concepts:
 
-Identity
-Versioning
-Primitive Types
-Basic Composite Types
-Function Contracts
-Arguments
-Return Values
-Errors
-Canonical Representation
-Validation
-Compatibility Metadata
+Normative Concept              Reference Module
 
-Memory, asynchronous execution, distributed operation, self-healing, hardware acceleration, and advanced security SHOULD remain profile-driven where practical.
+Interface identity        →    identity
+Version                   →    version
+Interface                 →    interface
+Function                  →    function
+Parameter                 →    parameter
+Type                      →    types
+Value                     →    values
+Record                    →    records
+Variant                   →    variants
+Option                    →    option
+Result                    →    result
+Handle                    →    handles
+Ownership                 →    ownership
+Lifetime                  →    lifetimes
+Call                      →    call
+Error                     →    errors
+Effect                    →    effects
+Capability                →    capabilities
+Execution                 →    execution
+Validation                →    validation
+Compatibility             →    compatibility
+Negotiation               →    negotiation
+Encoding                  →    encoding
+Decoding                  →    decoding
+Canonicalization          →    canonical
+ABI Hash                  →    hashing
+Conformance               →    conformance
 
-
----
-
-167. Core ABI Design Rule
-
-When there is a choice between:
-
-More Core Features
-
-and:
-
-Smaller Stable Core
-
-ULABI SHOULD prefer the smaller stable Core unless the feature is essential to universal interoperability.
-
-
----
-
-168. Long-Term Goal
-
-The long-term goal is:
-
-ULABI
-                   |
-      +------------+------------+
-      |            |            |
-  Language A   Language B   Language C
-      |            |            |
-      +------------+------------+
-                   |
-          Common ABI Contract
-
-An ecosystem should eventually be able to add a new programming language without redesigning existing ULABI interfaces.
+This mapping is intentionally defined now so later documents do not require architectural rewrites.
 
 
 ---
 
-169. Ultimate Interoperability Property
+111. Required Repository Artifacts
 
-The strongest test of the Core ABI is:
+The Core ABI is considered structurally complete only when the repository provides:
 
-New Language
-     |
-New Compiler
-     |
-New Runtime
-     |
-ULABI Adapter
-     |
-Existing ULABI Ecosystem
-
-If a new language can join the ecosystem without changing the existing languages, ULABI is achieving its intended purpose.
-
-
----
-
-170. Status
-
-This document is a:
-
-DRAFT CORE ABI DESIGN
-
-It is not yet a frozen binary standard.
-
-Before ULABI 1.0, the following MUST be finalized through implementation, testing, review, and interoperability experiments:
-
-1. Canonical binary encoding
-
-
-2. Exact primitive encodings
-
-
-3. Exact composite layouts
-
-
-4. Calling conventions
-
-
-5. Architecture mappings
-
-
-6. Type descriptor format
-
-
-7. ABI metadata format
-
-
-8. Interface identifier format
-
-
-9. Error encoding
-
-
-10. Ownership representation
-
-
-11. Capability representation
-
-
-12. Version negotiation
-
-
-13. Conformance requirements
-
-
-
-No implementation should treat unresolved draft details as permanently frozen.
+Normative specification
+Machine-readable schemas
+Canonical examples
+Conformance tests
+Reference implementation
+ABI fixtures
+Compatibility tests
+Security tests
+Fuzz tests
+Documentation
 
 
 ---
 
-171. Final Principle
+112. Core ABI Completion Criteria
 
-ULABI Core exists to make this possible:
+docs/abi/core-abi.md is complete when:
 
-ANY LANGUAGE
-               |
-               v
-          ULABI ADAPTER
-               |
-               v
-        ┌───────────────┐
-        │   ULABI CORE  │
-        └───────────────┘
-               |
-               v
-          ANY LANGUAGE
+all Core concepts have normative definitions;
 
-The language changes.
+every Core interface concept has a stable identity;
 
-The compiler changes.
+type boundaries are defined;
 
-The runtime changes.
+function contracts are defined;
 
-The operating system changes.
+ownership is explicit;
 
-The hardware changes.
+lifetimes are explicit;
 
-The implementation changes.
+errors are explicit;
 
-The universal interoperability contract remains.
+capabilities are explicit;
+
+execution semantics are explicit;
+
+compatibility rules are explicit;
+
+validation requirements are explicit;
+
+extension boundaries are explicit;
+
+conformance requirements are testable;
+
+reference implementation mappings are established.
+
 
 
 ---
 
-END OF docs/abi/core-abi.md
+113. Core ABI Non-Goals
 
-**Design 3 is deliberately more technical than `ULABI-DESIGN.md` and `ULABI-SPEC.md`.** The next logical document is **Design 4: `docs/abi/calling-convention.md`**, where we can define how ULABI calls actually map arguments, registers, stack frames, aggregates, pointers/handles, returns, variadic calls, callbacks, and architecture-specific ABIs without making ULABI dependent on any particular CPU.
+This specification deliberately does not standardize:
+
+A programming language
+A compiler implementation
+A garbage collector
+A CPU ISA
+An operating system
+A specific network protocol
+A single serialization technology
+A single object model
+A single scheduler
+A single memory allocator
+A single cryptographic algorithm
+A single runtime
+
+
+---
+
+114. Architectural Guarantee
+
+ULABI Core MUST remain independent of any specific implementation.
+
+In particular:
+
+ULABI ≠ Zamani
+ULABI ≠ Sankofa
+ULABI ≠ C
+ULABI ≠ Rust
+ULABI ≠ Linux
+ULABI ≠ x86
+ULABI ≠ ARM
+ULABI ≠ JVM
+ULABI ≠ WebAssembly
+
+All of these MAY implement, consume, host, compile to, or interoperate through ULABI.
+
+None owns the specification.
+
+
+---
+
+115. Final Core Contract
+
+The ULABI Core contract can be summarized as:
+
+ULABI CORE
+                     │
+       ┌─────────────┼─────────────┐
+       │             │             │
+    Identity       Types         Calls
+       │             │             │
+       ├─────────────┼─────────────┤
+       │             │             │
+   Ownership      Errors      Execution
+       │             │             │
+       ├─────────────┼─────────────┤
+       │             │             │
+   Lifetimes     Capability    Compatibility
+       │             │             │
+       └─────────────┼─────────────┘
+                     │
+              Validation
+                     │
+              Conformance
+                     │
+             Implementations
+
+The central rule is:
+
+> ULABI Core defines what interoperating components must mean at their boundary, not how their internals must implement that meaning.
+
+
+
+
+---
+
+116. Normative Status
+
+This document is a draft normative specification.
+
+Until ULABI Core reaches its first finalized major release:
+
+identifiers remain subject to governance;
+
+canonical encodings remain subject to schema finalization;
+
+conformance requirements remain subject to test-suite validation;
+
+profiles may evolve independently;
+
+implementations MUST clearly identify the ULABI specification version they target.
+
+
+No implementation should claim final ULABI Core 1.0 conformance until the corresponding conformance suite and certification rules are finalized.
+
+
+---
+
+3. What must be created around core-abi.md
+
+The most important point for your workflow is that core-abi.md should now be treated as a contract anchor. The other files should implement the integration points already defined above rather than later changing this document.
+
+A. Foundational files — do these first
+
+These are the files that should be completed before the remaining ABI documents.
+
+1. ULABI-SPEC.md
+
+Must define:
+
+normative specification hierarchy;
+
+RFC terminology;
+
+Core versus profile distinction;
+
+normative document precedence;
+
+identifiers;
+
+canonical representations;
+
+mandatory/optional semantics;
+
+conformance terminology;
+
+specification authority.
+
+
+Integration:
+
+ULABI-DESIGN
+      ↓
+ULABI-SPEC
+      ↓
+core-abi
+
+
+---
+
+2. ULABI-VERSIONING.md
+
+Must define:
+
+major/minor/patch semantics;
+
+interface versions;
+
+profile versions;
+
+schema versions;
+
+compatibility;
+
+breaking changes;
+
+ABI identity changes;
+
+deprecation;
+
+migration.
+
+
+
+---
+
+3. ULABI-GOVERNANCE.md
+
+Must define:
+
+who may propose changes;
+
+review process;
+
+normative change process;
+
+emergency security changes;
+
+version approval;
+
+profile approval;
+
+certification authority;
+
+independent implementation requirements.
+
+
+
+---
+
+4. Required ABI documents
+
+These are the exact ABI modules needed.
+
+docs/abi/
+├── core-abi.md
+├── calling-convention.md
+├── data-types.md
+├── memory-model.md
+├── stack-model.md
+├── register-model.md
+├── exception-model.md
+└── return-values.md
+
+Their dependencies should be:
+
+core-abi
+              /     |      \
+             /      |       \
+        data-types  calls   errors
+             |       |        |
+             ▼       ▼        ▼
+          memory   registers exception
+             │       │        │
+             ▼       ▼        ▼
+           stack  calling    return
+
+
+---
+
+5. Required type-system modules
+
+docs/type-system/
+├── universal-types.md
+├── type-descriptors.md
+├── generics.md
+├── enums.md
+├── structs.md
+├── unions.md
+└── type-compatibility.md
+
+Code/schema modules:
+
+type_id
+type_descriptor
+primitive_type
+composite_type
+record_type
+enum_type
+variant_type
+generic_type
+type_compatibility
+type_validation
+
+
+---
+
+6. Required interoperability modules
+
+docs/interoperability/
+├── language-interoperability.md
+├── foreign-function-interface.md
+├── object-model.md
+├── name-mangling.md
+├── symbol-resolution.md
+└── cross-language-data.md
+
+Required implementation modules:
+
+language_adapter
+ffi
+symbol
+symbol_resolver
+name_registry
+binding_generator
+type_mapper
+error_mapper
+ownership_mapper
+lifetime_mapper
+
+
+---
+
+7. Required runtime modules
+
+docs/runtime/
+├── runtime-interface.md
+├── process-model.md
+├── threading.md
+├── async-model.md
+├── concurrency.md
+└── resource-management.md
+
+Required implementation modules:
+
+runtime
+process
+thread
+task
+future
+scheduler_adapter
+async_adapter
+resource
+resource_registry
+cancellation
+
+
+---
+
+8. Required memory modules
+
+docs/memory/
+├── memory-safety.md
+├── ownership.md
+├── lifetimes.md
+├── allocation.md
+├── virtual-memory.md
+└── shared-memory.md
+
+Required implementation modules:
+
+memory
+allocator
+ownership
+borrow
+lifetime
+reference
+shared_memory
+memory_region
+memory_handle
+release
+
+
+---
+
+9. Required security modules
+
+docs/security/
+├── security-model.md
+├── capability-security.md
+├── sandboxing.md
+├── cryptography.md
+├── authentication.md
+├── authorization.md
+├── zero-trust.md
+├── secure-loading.md
+└── supply-chain-security.md
+
+Required implementation modules:
+
+security
+capability
+capability_registry
+authorization
+authentication
+sandbox
+policy
+secure_loader
+signature
+trust
+audit
+
+
+---
+
+10. Required reliability modules
+
+docs/reliability/
+├── self-healing.md
+├── fault-detection.md
+├── fault-isolation.md
+├── recovery.md
+├── rollback.md
+└── health-monitoring.md
+
+Required modules:
+
+fault_detector
+diagnostics
+fault_isolator
+recovery_engine
+recovery_policy
+health
+health_monitor
+rollback
+checkpoint
+escalation
+
+Important: these are profiles/extensions and must not become hidden dependencies of Core.
+
+
+---
+
+11. Required distributed modules
+
+docs/distributed/
+├── distributed-abi.md
+├── remote-calls.md
+├── serialization.md
+├── service-discovery.md
+├── distributed-errors.md
+└── consensus-boundaries.md
+
+Required modules:
+
+transport
+serializer
+deserializer
+remote_call
+endpoint
+service_discovery
+distributed_error
+timeout
+retry
+consistency
+
+
+---
+
+12. Required compatibility modules
+
+docs/compatibility/
+├── backwards-compatibility.md
+├── forwards-compatibility.md
+├── feature-negotiation.md
+├── capability-discovery.md
+└── graceful-degradation.md
+
+Required modules:
+
+compatibility
+version_negotiator
+feature_negotiator
+capability_discovery
+compatibility_checker
+abi_diff
+deprecation
+fallback
+
+
+---
+
+13. Required schemas
+
+I recommend creating the schema tree before implementing large amounts of runtime code:
+
+schemas/
+├── interface.schema.json
+├── function.schema.json
+├── parameter.schema.json
+├── type.schema.json
+├── field.schema.json
+├── variant.schema.json
+├── error.schema.json
+├── capability.schema.json
+├── profile.schema.json
+├── version.schema.json
+├── execution-semantics.schema.json
+├── effect.schema.json
+├── ownership.schema.json
+├── lifetime.schema.json
+├── handle.schema.json
+├── encoding.schema.json
+├── conformance-result.schema.json
+└── abi-manifest.schema.json
+
+These schemas become the machine-readable counterpart of the Markdown specifications.
+
+
+---
+
+14. Required examples
+
+examples/
+├── minimal/
+├── functions/
+├── types/
+├── records/
+├── variants/
+├── option-result/
+├── ownership/
+├── handles/
+├── errors/
+├── capabilities/
+├── versioning/
+├── negotiation/
+├── cross-language/
+├── local/
+├── process-local/
+└── distributed/
+
+Every important normative rule should eventually have an executable example.
+
+
+---
+
+15. Required tests
+
+tests/
+├── core/
+│   ├── identity/
+│   ├── functions/
+│   ├── parameters/
+│   ├── results/
+│   ├── types/
+│   ├── records/
+│   ├── variants/
+│   ├── option/
+│   ├── result/
+│   ├── handles/
+│   ├── ownership/
+│   ├── lifetimes/
+│   ├── errors/
+│   ├── effects/
+│   ├── capabilities/
+│   ├── execution/
+│   └── validation/
+│
+├── compatibility/
+├── negotiation/
+├── encoding/
+├── decoding/
+├── canonicalization/
+├── hashing/
+├── security/
+├── determinism/
+├── interoperability/
+├── fuzz/
+└── regression/
+
+
+---
+
+16. Required conformance tree
+
+conformance/
+├── core/
+├── types/
+├── calls/
+├── memory/
+├── errors/
+├── security/
+├── async/
+├── distributed/
+├── reliability/
+└── profiles/
+
+The conformance system should produce machine-readable results such as:
+
+ULABI Core       PASS
+ULABI Types      PASS
+ULABI Memory     PASS
+ULABI FFI        PASS
+ULABI Security   PASS
+ULABI Async      PASS
+ULABI Self-Heal  NOT CLAIMED
+ULABI Distributed PASS
+
+
+---
+
+17. Required reference implementation tree
+
+I recommend not putting the implementation directly inside core/ at the repository root.
+
+Use:
+
+reference/
+└── rust/
+    └── ulabi-core/
+
+and later:
+
+reference/
+├── rust/
+├── c/
+├── cpp/
+├── go/
+├── python/
+├── java/
+├── swift/
+├── kotlin/
+├── fortran/
+└── ada/
+
+Again, this is an implementation ecosystem, not the specification.
+
+
+---
+
+18. Complete required code/module inventory
+
+For the first complete ULABI implementation, I would lock the module inventory to:
+
+IDENTITY
+├── interface_id
+├── function_id
+├── type_id
+├── error_id
+├── capability_id
+└── profile_id
+
+VERSIONING
+├── version
+├── compatibility
+├── negotiation
+└── deprecation
+
+CORE
+├── interface
+├── function
+├── parameter
+├── result
+├── type
+├── value
+├── record
+├── enum
+├── variant
+├── option
+├── result_value
+└── handle
+
+CALL
+├── call
+├── argument
+├── return_value
+├── calling_boundary
+├── invocation
+└── invocation_context
+
+MEMORY
+├── memory
+├── memory_region
+├── allocator
+├── ownership
+├── borrow
+├── lifetime
+├── reference
+├── shared_memory
+└── release
+
+ERRORS
+├── error
+├── error_code
+├── error_data
+├── error_chain
+└── error_conversion
+
+SECURITY
+├── capability
+├── capability_registry
+├── policy
+├── authorization
+├── authentication
+├── sandbox
+├── trust
+└── secure_loader
+
+EXECUTION
+├── execution
+├── effects
+├── execution_mode
+├── cancellation
+├── timeout
+├── determinism
+└── reentrancy
+
+ENCODING
+├── encoder
+├── decoder
+├── canonical
+├── schema
+├── validation
+└── hashing
+
+INTEROPERABILITY
+├── language_adapter
+├── type_mapper
+├── ffi
+├── symbol
+├── symbol_resolver
+├── name_registry
+├── error_mapper
+├── ownership_mapper
+└── lifetime_mapper
+
+RUNTIME
+├── runtime
+├── process
+├── thread
+├── task
+├── future
+├── resource
+└── resource_registry
+
+DISTRIBUTED
+├── transport
+├── endpoint
+├── serializer
+├── remote_call
+├── service_discovery
+├── retry
+├── consistency
+└── distributed_error
+
+RELIABILITY
+├── fault_detector
+├── fault_isolator
+├── diagnosis
+├── recovery_engine
+├── recovery_policy
+├── rollback
+├── checkpoint
+├── health_monitor
+└── escalation
+
+TOOLING
+├── abi_parser
+├── abi_validator
+├── abi_diff
+├── binding_generator
+├── manifest_generator
+└── conformance_runner
+
+
+---
+
+19. The critical integration rule going forward
+
+From this point on, I recommend we do not rewrite core-abi.md again merely because another document is being created.
+
+The dependency contract is now:
+
+ULABI-DESIGN
+                               │
+                               ▼
+                           ULABI-SPEC
+                               │
+                    ┌──────────┴──────────┐
+                    ▼                     ▼
+               VERSIONING            GOVERNANCE
+                    │
+                    ▼
+                CORE ABI
+                    │
+        ┌───────────┼────────────┐
+        ▼           ▼            ▼
+      TYPES       CALLS        ERRORS
+        │           │            │
+        └───────────┼────────────┘
+                    ▼
+                  MEMORY
+                    │
+       ┌────────────┼────────────┐
+       ▼            ▼            ▼
+   RUNTIME      SECURITY    INTEROP
+       │            │            │
+       └────────────┼────────────┘
+                    ▼
+             EXTENSION PROFILES
+                    │
+                    ▼
+              CONFORMANCE
+                    │
+                    ▼
+            IMPLEMENTATIONS
+
+Every subsequent document should consume these contracts, not redefine them.
+
+The current repository structure already contains the ABI documents as separate files, so this approach also fits the architecture already established in the repository rather than creating another parallel specification tree.
+
+One important correction for the workflow: the file you asked for is docs/abi/core-abi.md, not doc/abi/core-abi.md. The repository confirms that exact existing path.
