@@ -1,13 +1,3 @@
-I checked the actual Benwellonedge28/ULABI repository first. It is currently essentially a clean starting point: the repository is public, uses Apache-2.0, and currently has the short README defining ULABI as the “Universal Language Application Binary Interface”; I did not find an existing implementation/specification tree to preserve.
-
-So the right move is to make the design document the architectural foundation, incorporating everything we've discussed plus several features that will prevent major redesigns later.
-
-I recommend naming the file:
-
-docs/ULABI-DESIGN.md
-
-Below is the complete version to copy and paste.
-
 # ULABI Design Document
 
 ## Universal Language Application Binary Interface
