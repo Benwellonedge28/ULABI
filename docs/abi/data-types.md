@@ -1,2588 +1,4147 @@
-I read the current ULABI-DESIGN.md first. It establishes the language-neutral, layered, minimal-Core + profiles architecture, including semantic types, canonical encoding, memory boundaries, versioning, security, distributed operation, and explicit separation between ULABI, Zamani, and Sankofa.
+I read the current ULABI-DESIGN.md in Benwellonedge28/ULABI first. It establishes the Minimal Core + Profiles architecture, language/runtime/platform neutrality, semantic types, canonical representations, memory boundaries, security, self-healing, distributed operation, hardware profiles, compatibility, and conformance direction.
 
-Below is the complete file for:
+I also checked the repository structure: docs/abi/core-abi.md and docs/abi/data-types.md already exist, along with ULABI-SPEC.md.
 
+Therefore Design Document 5 should be docs/abi/data-types.md, and it should be written as a complete contract rather than a simple description.
+
+Below is the complete file you can copy and paste.
+
+# ULABI Universal Data Types Specification
+
+**Document:** `docs/abi/data-types.md`  
+**Project:** ULABI  
+**Full Name:** Universal Language Application Binary Interface  
+**Specification Area:** Universal ABI Data Types  
+**Version:** 0.1.0-draft  
+**Status:** Design Specification / Pre-Implementation  
+**License:** Apache-2.0  
+
+---
+
+# 1. Purpose
+
+This document defines the universal data-type model used by ULABI.
+
+The purpose of the ULABI data-type system is to provide a stable semantic contract through which independently implemented programming languages, compilers, runtimes, libraries, applications, operating systems, devices, and distributed systems can exchange values.
+
+The ULABI data-type system MUST:
+
+- remain language-neutral;
+- remain compiler-neutral;
+- remain runtime-neutral;
+- remain operating-system-neutral;
+- remain architecture-neutral;
+- remain vendor-neutral;
+- distinguish semantic meaning from implementation representation;
+- provide deterministic boundary representations;
+- support safe cross-language conversion;
+- support versioned evolution;
+- support compatibility analysis;
+- support validation;
+- support security boundaries;
+- support local and distributed interoperability;
+- support future extensions without destabilizing the Core.
+
+ULABI data types define what a value means and how that value can safely cross a ULABI boundary.
+
+They do not require participating languages to represent that value internally in the same way.
+
+---
+
+# 2. Relationship to the ULABI Architecture
+
+The ULABI architecture is based on:
+
+```text
+Language
+    |
+Compiler
+    |
+Runtime
+    |
+Adapter
+    |
+    v
++----------------------+
+|      ULABI           |
+|                      |
+| Semantic Contract    |
+| Type Contract        |
+| ABI Contract         |
+| Error Contract       |
++----------------------+
+    |
+Adapter
+    |
+Runtime
+    |
+Compiler
+    |
+Language
+
+The data-type specification is one layer of the Core ABI.
+
+The documentation relationship is:
+
+ULABI-DESIGN.md
+       |
+       v
+ULABI-SPEC.md
+       |
+       v
+docs/abi/core-abi.md
+       |
+       v
 docs/abi/data-types.md
+       |
+       +-----------------------------+
+       |                             |
+       v                             v
+memory-model.md              calling-convention.md
+       |
+       +-----------------------------+
+       |
+       v
+type-system specifications
 
-ULABI Universal Data Types Specification
+ULABI-DESIGN.md defines the overall architecture.
 
-Project: ULABI
-Full Name: Universal Language Application Binary Interface
-Document: "docs/abi/data-types.md"
-Specification Area: Core ABI / Universal Type System
-Status: Architecture / Design Specification
-Specification Version: 0.1.0-draft
-License: Apache-2.0
+ULABI-SPEC.md defines system-wide normative requirements.
+
+docs/abi/core-abi.md defines the fundamental ABI boundary.
+
+This document defines the universal data-type contract.
+
+Specialized documents MAY extend this type system, but MUST NOT contradict the rules established here.
+
 
 ---
 
-1. Purpose
+3. Fundamental Principle
 
-This document defines the ULABI Universal Data Type System.
+The fundamental principle is:
 
-The purpose of the ULABI type system is to provide a language-neutral semantic representation for values crossing a ULABI boundary.
+> ULABI defines semantic types at the interoperability boundary, not the internal type system of any programming language.
 
-ULABI must allow independently designed programming languages, compilers, runtimes, libraries, operating systems, processors, devices, and distributed systems to exchange data without requiring them to share:
 
-- source syntax;
-- programming-language type systems;
-- compiler implementations;
-- runtime implementations;
-- memory-management strategies;
-- object models;
-- operating systems;
-- processor architectures;
-- vendor-specific representations.
-
-ULABI defines the meaning and boundary contract of data.
-
-It does not require participating languages to internally represent that data in the same way.
-
----
-
-2. Relationship to ULABI-DESIGN.md
-
-This document is subordinate to the ULABI master architecture.
-
-The master architecture establishes:
-
-«ULABI is the interoperability contract, not a programming language, compiler, runtime, operating system, processor architecture, or vendor platform.»
-
-The ULABI type system follows the same principle.
-
-The type system therefore separates:
-
-Semantic Meaning
-       |
-       v
-ULABI Boundary Type
-       |
-       v
-Implementation Representation
 
 For example:
 
-Language A String
-       |
-       v
+Language A
+    |
+    | custom internal representation
+    v
 ULABI String
-       |
-       v
-Language B String
+    ^
+    | different internal representation
+    |
+Language B
 
-Language A and Language B do not need identical internal string implementations.
+Language A and Language B do not need to use the same internal representation.
 
-They only need to satisfy the ULABI String contract.
+They only need to agree on the ULABI meaning and boundary representation.
+
 
 ---
 
-3. Design Goals
+4. Zamani and Sankofa Independence
 
-The ULABI Universal Type System MUST prioritize:
+ULABI MUST remain independent from both Zamani and Sankofa.
 
-1. Language neutrality.
-2. Explicit semantics.
-3. Deterministic representation.
-4. Stable type identity.
-5. Cross-platform compatibility.
-6. Cross-architecture compatibility.
-7. Safe conversion.
-8. Explicit ownership.
-9. Explicit lifetime.
-10. Explicit mutability.
-11. Explicit nullability.
-12. Explicit error behavior.
-13. Version compatibility.
-14. Forward compatibility.
-15. Backward compatibility.
-16. Canonical encoding.
-17. Validation.
-18. Security.
-19. Resource limits.
+ULABI
+                /     \
+               /       \
+          Zamani      Sankofa
+
+Zamani is one independent programming language.
+
+Sankofa is another independent programming language.
+
+Neither language defines ULABI.
+
+Neither language is the reference language for ULABI.
+
+Neither language may impose its internal type system upon ULABI.
+
+Both MAY implement ULABI adapters.
+
+The same ULABI type contract MUST be implementable by unrelated languages.
+
+This principle applies equally to:
+
+C;
+
+C++;
+
+Rust;
+
+Go;
+
+Java;
+
+Python;
+
+C#;
+
+Swift;
+
+Kotlin;
+
+Fortran;
+
+Ada;
+
+JavaScript;
+
+TypeScript;
+
+WebAssembly environments;
+
+future programming languages.
+
+
+
+---
+
+5. Type-System Goals
+
+The ULABI data-type system SHALL provide:
+
+1. Semantic stability.
+
+
+2. Binary stability.
+
+
+3. Explicit representation.
+
+
+4. Explicit width.
+
+
+5. Explicit encoding.
+
+
+6. Explicit ownership.
+
+
+7. Explicit lifetime.
+
+
+8. Explicit mutability.
+
+
+9. Explicit nullability.
+
+
+10. Explicit validity.
+
+
+11. Explicit bounds.
+
+
+12. Explicit alignment where applicable.
+
+
+13. Deterministic encoding.
+
+
+14. Version-aware evolution.
+
+
+15. Compatibility analysis.
+
+
+16. Security validation.
+
+
+17. Cross-language conversion.
+
+
+18. Cross-platform operation.
+
+
+19. Distributed serialization.
+
+
 20. Streaming support.
-21. Large-data support.
-22. Zero-copy interoperability where safe.
-23. Formal verifiability.
-24. Extensibility.
-25. Long-term stability.
 
----
 
-4. Non-Goals
+21. Zero-copy support where safe.
 
-The ULABI type system does NOT attempt to:
 
-- replace programming-language type systems;
-- force languages to adopt one type system;
-- define one universal object model;
-- require garbage collection;
-- require manual memory management;
-- require ownership-based memory management;
-- require reference counting;
-- require pointers to have a specific representation;
-- require all languages to support every ULABI type;
-- make incompatible types silently compatible;
-- hide lossy conversions;
-- define application-specific business types in the Core.
+22. Extensibility.
 
-ULABI provides interoperability primitives and semantic contracts.
 
----
+23. Formal verification opportunities.
 
-5. Type System Architecture
 
-The type system is divided into layers.
+24. Conformance testing.
 
-+-------------------------------------------------------+
-| Application Semantic Types                            |
-+-------------------------------------------------------+
-| ULABI Standard Semantic Types                         |
-+-------------------------------------------------------+
-| ULABI Structural Types                                |
-+-------------------------------------------------------+
-| ULABI Primitive Types                                 |
-+-------------------------------------------------------+
-| Canonical Boundary Representation                     |
-+-------------------------------------------------------+
-| Implementation Representation                         |
-+-------------------------------------------------------+
 
-The Core MUST remain small.
 
-More specialized types SHOULD be introduced through standardized extensions and profiles.
 
 ---
 
 6. Type Categories
 
-ULABI types are divided into the following categories:
+ULABI divides types into the following categories:
 
-6.1 Primitive Types
+ULABI Types
+    |
+    +-- Primitive Types
+    |
+    +-- Scalar Types
+    |
+    +-- Text Types
+    |
+    +-- Binary Types
+    |
+    +-- Collection Types
+    |
+    +-- Structured Types
+    |
+    +-- Algebraic Types
+    |
+    +-- Reference Types
+    |
+    +-- Resource Types
+    |
+    +-- Capability Types
+    |
+    +-- Temporal Types
+    |
+    +-- Numeric Extension Types
+    |
+    +-- Compute Types
+    |
+    +-- Stream Types
+    |
+    +-- Future / Async Types
+    |
+    +-- Extension Types
 
-Primitive types represent fundamental values.
+The Core MUST remain minimal.
 
-Initial Core primitives:
+Not every category must be part of the mandatory Core.
 
-- "Bool"
-- "Int"
-- "UInt"
-- "Float"
-- "Char"
-- "Unit"
+Advanced categories MAY be defined through ULABI profiles.
 
----
-
-6.2 Binary Types
-
-Binary types represent raw data.
-
-Core binary type:
-
-- "Bytes"
-
----
-
-6.3 Text Types
-
-Core textual type:
-
-- "String"
-
-ULABI uses Unicode semantics.
-
-UTF-8 is the preferred canonical interchange representation.
-
----
-
-6.4 Structural Types
-
-Structural types compose other types.
-
-Examples:
-
-- "List<T>"
-- "Record"
-- "Tuple"
-- "Map<K,V>"
-- "Set<T>"
 
 ---
 
-6.5 Algebraic Types
+7. Type Identity
 
-ULABI supports semantic algebraic types.
-
-Examples:
-
-- "Enum"
-- "Variant"
-- "Option<T>"
-- "Result<T,E>"
-
----
-
-6.6 Resource Types
-
-Resource types represent externally managed resources.
-
-Examples:
-
-- "Handle"
-- "Resource"
-- "Capability"
-
-Resource semantics MUST be explicit.
-
----
-
-6.7 Temporal Types
-
-Standardized temporal extensions may include:
-
-- "Timestamp"
-- "Duration"
-- "Date"
-- "Time"
-- "TimeZone"
-
-Temporal semantics MUST NOT depend on a local machine's clock representation.
-
----
-
-6.8 Numeric Extensions
-
-Future standardized numeric types may include:
-
-- "Decimal"
-- "BigInteger"
-- fixed-point numbers;
-- arbitrary-precision floating-point values;
-- complex numbers;
-- rational numbers.
-
----
-
-6.9 Scientific and Accelerator Types
-
-Optional profiles may define:
-
-- "Tensor"
-- "Matrix"
-- "Vector"
-- "SparseTensor"
-- "Complex"
-- accelerator buffers;
-- device memory references.
-
-These MUST NOT become mandatory Core types unless there is a demonstrated interoperability requirement.
-
----
-
-7. Universal Type Identity
-
-Every externally visible ULABI type MUST have a stable identity.
-
-A type identity MUST NOT depend solely on:
-
-- source-language name;
-- memory address;
-- compiler-generated symbol;
-- compiler version;
-- process ID;
-- machine-specific pointer;
-- local runtime identifier.
-
-A type identity should be represented through a stable identifier.
+Every externally visible non-primitive type SHOULD have a stable type identifier.
 
 Conceptually:
 
-TypeID
-{
+TypeID {
     namespace
     name
     version
-    identity
 }
 
-The exact wire representation will be defined by the Core ABI and canonical encoding specifications.
+Example:
+
+com.example.finance/Money/1
+
+Type identity MUST NOT depend solely upon:
+
+source-language spelling;
+
+compiler-generated names;
+
+memory addresses;
+
+process IDs;
+
+file locations;
+
+object addresses.
+
+
+A type identifier MUST remain stable across compatible implementations.
+
 
 ---
 
-8. Type Names
+8. Type Descriptor
 
-Human-readable type names are descriptive.
+A ULABI type MAY be described by machine-readable metadata.
 
-They are not sufficient as the sole identity mechanism.
+Conceptually:
+
+TypeDescriptor {
+    type_id
+    kind
+    version
+    flags
+    size
+    alignment
+    encoding
+    ownership
+    lifetime
+    mutability
+    nullability
+    constraints
+}
+
+The exact binary descriptor format SHALL be defined by the future schema/metadata specification.
+
+
+---
+
+9. Primitive Types
+
+The initial Core primitive types are:
+
+Bool
+
+I8
+I16
+I32
+I64
+I128
+
+U8
+U16
+U32
+U64
+U128
+
+F32
+F64
+
+Byte
+Char
+
+Unit
+
+Fixed-width types are preferred over architecture-dependent types.
+
+
+---
+
+10. Boolean
+
+ULABI Boolean has exactly two semantic states:
+
+false
+true
+
+A Boolean MUST NOT contain an additional semantic state.
+
+The canonical representation SHALL be defined by the canonical encoding specification.
+
+A receiver MUST NOT infer Boolean semantics from arbitrary memory contents.
+
+
+---
+
+11. Byte
+
+A ULABI Byte is exactly 8 bits.
+
+Valid values:
+
+0..255
+
+Byte is binary data.
+
+Byte MUST NOT automatically be interpreted as text.
+
+
+---
+
+12. Signed Integers
+
+ULABI signed integers use fixed widths:
+
+I8
+I16
+I32
+I64
+I128
+
+The semantic representation SHALL use two's-complement arithmetic unless a future normative specification explicitly defines another representation.
+
+Each width has a fixed value range.
 
 For example:
 
-User
+I8
+    -128 .. 127
 
-is ambiguous.
+I16
+    -32768 .. 32767
 
-A stable identity should distinguish:
+I32
+    -2147483648 .. 2147483647
 
-example.identity.User
+Implementations MUST NOT silently reinterpret one signed width as another.
 
-from:
-
-another.identity.User
-
-The specification MUST prevent accidental type collisions.
 
 ---
 
-9. Primitive Type: Bool
+13. Unsigned Integers
 
-"Bool" represents exactly two semantic states:
+ULABI unsigned integer types are:
 
-true
-false
+U8
+U16
+U32
+U64
+U128
 
-No third state is permitted.
+Each type has a fixed width.
 
-The canonical representation MUST define:
+Unsigned arithmetic MUST have explicitly defined overflow behavior.
 
-- encoding;
-- decoding;
-- validation;
-- invalid representations;
-- size;
-- compatibility behavior.
+Overflow MUST NOT depend on the implementation language.
 
-Implementations MUST NOT interpret arbitrary non-zero values as valid ULABI booleans unless explicitly permitted by a compatibility profile.
 
 ---
 
-10. Integer Types
+14. Architecture-Dependent Integer Types
 
-ULABI distinguishes:
-
-Int
-UInt
-
-Signed and unsigned integer semantics MUST be explicit.
-
-An implementation MUST NOT assume that:
+ULABI MUST NOT use ambiguous universal types such as:
 
 int
+long
+word
+native_int
+pointer-sized integer
 
-in one language has the same range as:
+as portable ABI types.
 
-int
+An implementation MAY expose architecture-specific aliases through an architecture profile.
 
-in another language.
+For example:
 
----
+ULABI.NativeInt
 
-11. Integer Widths
+MUST resolve explicitly to a defined width within that profile.
 
-ULABI may provide explicitly sized integer variants:
-
-Int8
-Int16
-Int32
-Int64
-Int128
-
-UInt8
-UInt16
-UInt32
-UInt64
-UInt128
-
-Additional widths may be standardized later.
-
-An implementation MUST NOT silently reinterpret one integer width as another when doing so changes the representable range.
 
 ---
 
-12. Integer Overflow
+15. Floating-Point Types
 
-Integer overflow behavior MUST be explicit.
+The Core floating-point types are:
 
-Possible policies include:
+F32
+F64
 
-- trap;
-- return error;
-- checked operation;
-- wrapping operation;
-- saturating operation.
+The specification SHALL define:
 
-The ABI MUST NOT silently select an overflow behavior merely because the source language happens to use that behavior internally.
+width;
 
----
+representation;
 
-13. Floating-Point Types
+NaN;
 
-ULABI may support standardized floating-point representations including:
+positive infinity;
 
-Float32
-Float64
+negative infinity;
 
-Future profiles may support additional formats.
+signed zero;
 
-Floating-point semantics MUST define:
+precision;
 
-- precision;
-- exponent range;
-- NaN;
-- positive infinity;
-- negative infinity;
-- positive zero;
-- negative zero;
-- rounding;
-- comparison;
-- canonical encoding.
+conversion;
+
+comparison semantics.
+
+
+Where practical, ULABI SHOULD use widely interoperable IEEE-compatible representations.
+
 
 ---
 
-14. NaN Semantics
+16. Floating-Point NaN
 
-ULABI implementations MUST explicitly define behavior involving NaN values.
+ULABI MUST define how NaN values are represented at the boundary.
 
-The following MUST NOT be silently assumed:
+The implementation MUST NOT assume that all NaN bit patterns are semantically distinct.
 
-NaN == NaN
+Canonical encodings SHOULD normalize NaN representations where required.
 
-Canonical serialization SHOULD provide deterministic treatment of NaN representations where deterministic encoding is required.
 
 ---
 
-15. Character Type
+17. Floating-Point Infinity
 
-"Char" represents a Unicode scalar value.
+ULABI SHALL distinguish:
 
-It MUST NOT be defined merely as:
++Infinity
+-Infinity
 
-one byte
+Infinity MUST NOT be silently converted into an ordinary finite value.
+
+
+---
+
+18. Floating-Point Signed Zero
+
+ULABI SHALL preserve the semantic distinction where required:
+
++0
+-0
+
+Operations that intentionally normalize signed zero MUST declare that behavior.
+
+
+---
+
+19. Character
+
+Char represents a Unicode scalar value.
+
+ULABI MUST NOT assume that:
+
+Char == 8 bits
 
 or:
 
-one machine word
+Char == 16 bits
 
-The implementation representation may differ.
+or:
 
-The ULABI boundary semantics remain language-neutral.
+Char == 32 bits
 
----
+Internally, languages MAY use different character representations.
 
-16. String Type
+The ULABI boundary representation MUST be explicit.
 
-"String" represents Unicode text.
-
-ULABI SHOULD use UTF-8 as the canonical boundary encoding.
-
-A ULABI String contract MUST define:
-
-- encoding;
-- validity;
-- length semantics;
-- maximum permitted size;
-- malformed sequence behavior;
-- normalization policy;
-- ownership;
-- lifetime;
-- mutability.
 
 ---
 
-17. String Length
+20. String
 
-ULABI MUST distinguish between:
+ULABI defines:
 
-- byte length;
-- code-point count;
-- grapheme count.
+String
 
-The boundary contract MUST specify which measurement is being used.
+as a sequence of Unicode text.
 
-Implementations MUST NOT assume that:
+The canonical text encoding SHOULD be UTF-8.
 
-length(String)
+A String boundary contract MUST provide enough information to determine:
 
-means the same thing in every language.
+encoding;
+
+length;
+
+data;
+
+validity.
+
+
+Conceptually:
+
+String {
+    encoding
+    length
+    data
+}
+
 
 ---
 
-18. String Normalization
+21. String Length
 
-ULABI MUST NOT silently normalize text unless the contract explicitly requires it.
+String length MUST have explicitly defined semantics.
 
-Where normalization matters, a profile SHOULD identify the normalization form.
+ULABI SHOULD distinguish:
 
-This prevents two systems from silently changing application data.
+byte length
+code-point length
+grapheme length
+
+These MUST NOT be confused.
+
+The canonical ABI length SHOULD represent encoded byte length.
+
+Higher-level character counts MAY be exposed separately.
+
 
 ---
 
-19. Bytes
+22. Invalid Strings
 
-"Bytes" represents arbitrary binary data.
+ULABI MUST define behavior for invalid encoded strings.
+
+A conformant implementation MUST NOT silently reinterpret invalid text as valid text unless the applicable contract explicitly specifies a recovery policy.
+
+Possible policies include:
+
+Reject
+Replace
+Escape
+Binary fallback
+
+The policy MUST be explicit.
+
+
+---
+
+23. Null-Termination
+
+ULABI MUST NOT require null-terminated strings.
+
+A language that uses:
+
+"hello\0"
+
+internally MAY adapt that string to ULABI.
+
+The ULABI String contract is length-aware.
+
+
+---
+
+24. Bytes
+
+Binary data is represented by:
+
+Bytes
+
+Conceptually:
+
+Bytes {
+    length
+    data
+}
+
+Bytes MAY contain arbitrary byte values.
+
+Bytes MUST remain semantically distinct from String.
 
 String != Bytes
 
-A byte sequence MUST NOT automatically be interpreted as text.
-
-"Bytes" may contain:
-
-- zero bytes;
-- arbitrary binary values;
-- encoded documents;
-- cryptographic material;
-- compressed data;
-- application-defined binary formats.
 
 ---
 
-20. Unit
+25. Arrays
 
-"Unit" represents successful completion where no value is returned.
+An array is an ordered fixed or dynamically sized sequence of elements of one declared type.
 
-Example:
+Conceptually:
 
-Result<Unit, Error>
+Array<T> {
+    element_type
+    length
+    elements
+}
 
-The Unit value carries no application-defined payload.
+The receiver MUST be able to determine the element count.
+
+Sentinel termination MUST NOT be required.
+
 
 ---
 
-21. List
+26. Lists
 
-ULABI defines an ordered collection abstraction:
+ULABI MAY define:
 
 List<T>
 
-A List contract MUST define:
+as a dynamically sized ordered collection.
 
-- element type;
-- ordering;
-- element count;
-- maximum size;
-- encoding;
-- ownership;
-- lifetime;
-- mutation semantics.
+Unlike an ABI-visible native array, a List MAY carry additional metadata such as:
 
-Example:
+length
+capacity
+ownership
+mutability
+allocator information
 
-List<Int>
+The exact representation belongs to the collection specification.
+
 
 ---
 
-22. Tuple
+27. Maps
 
-ULABI may define positional structures:
+ULABI MAY define:
 
-Tuple<T1,T2,...,Tn>
+Map<K,V>
 
-Tuple elements are identified by position.
+A Map specification MUST define:
 
-Example:
+valid key types;
 
-Tuple<String, UInt, Bool>
+key equality;
 
-A tuple is distinct from a named Record.
+duplicate-key behavior;
+
+ordering semantics;
+
+canonical encoding;
+
+iteration semantics;
+
+nullability;
+
+mutation behavior.
+
+
+If ordering is not guaranteed, the specification MUST say so explicitly.
+
 
 ---
 
-23. Record
+28. Sets
 
-A Record represents named fields.
+ULABI MAY define:
+
+Set<T>
+
+A Set MUST define:
+
+uniqueness;
+
+equality;
+
+ordering;
+
+canonical representation;
+
+insertion/removal behavior.
+
+
+A Set MUST NOT rely on implementation-specific hash functions for semantic identity.
+
+
+---
+
+29. Tuples
+
+ULABI MAY support:
+
+Tuple<T1,T2,...,TN>
+
+Tuple element order is significant.
+
+For example:
+
+Tuple<String, I32>
+
+is not semantically identical to:
+
+Tuple<I32, String>
+
+
+---
+
+30. Records
+
+A Record is a structured collection of named or identified fields.
 
 Example:
 
 Person {
     name: String
-    age: UInt
+    age: U32
     active: Bool
 }
 
-Each field MUST have:
+Every ABI-visible field MUST have a stable identity.
 
-- stable identity;
-- type;
-- required/optional status;
-- compatibility behavior;
-- ownership semantics where applicable.
+The record contract MUST define:
+
+field identifier;
+
+field type;
+
+required/optional status;
+
+default behavior;
+
+compatibility behavior;
+
+unknown-field behavior.
+
+
 
 ---
 
-24. Record Evolution
+31. Structs
 
-Records MUST support controlled evolution.
+A fixed-layout structure MAY be represented as:
 
-For example, version 1:
+Struct {
+    field
+    type
+    offset
+    alignment
+    size
+}
+
+A ULABI implementation MUST NOT assume native compiler struct layout unless an applicable architecture profile explicitly defines it.
+
+
+---
+
+32. Struct Evolution
+
+A structure MUST be designed for version evolution.
+
+Possible evolution:
+
+Version 1
 
 Person {
     name
     age
 }
 
-Version 2:
+Version 2
 
 Person {
     name
     age
-    country
+    email
 }
 
-A compatible implementation SHOULD be able to ignore fields it does not understand when the contract permits it.
+Adding an optional field MAY preserve compatibility.
 
-Unknown fields MUST NOT be silently discarded when the contract requires preservation.
+Changing the semantic meaning of an existing field MUST NOT be treated as a compatible change.
+
 
 ---
 
-25. Optional Fields
+33. Enumerations
 
-A Record may contain optional fields.
-
-Example:
-
-Person {
-    name: String
-    age: UInt
-    nickname: Option<String>
-}
-
-Optionality MUST be distinguishable from a missing or malformed field.
-
----
-
-26. Enum
-
-An Enum represents a closed set of named values.
+ULABI Enums represent a finite set of variants.
 
 Example:
 
 Status {
     Pending
-    Active
+    Running
     Complete
     Failed
 }
 
-Enum members MUST have stable identifiers.
+Every variant MUST have a stable identifier.
 
-Numeric positions MUST NOT be relied upon as stable identity unless explicitly standardized.
+The discriminant representation MUST be defined.
+
 
 ---
 
-27. Variant
+34. Enum Evolution
 
-A Variant represents one of multiple possible alternatives.
+Adding an enum variant MAY be backward compatible only when the receiver has explicitly defined behavior for unknown variants.
+
+Otherwise, the change requires a new compatibility boundary.
+
+
+---
+
+35. Variants
+
+A Variant represents one of multiple possible data forms.
 
 Example:
 
-Shape =
-    Circle(radius)
-    Rectangle(width, height)
-    Triangle(a, b, c)
+Value =
+    Integer(I64)
+    Text(String)
+    Binary(Bytes)
 
-Each variant MUST have a stable identity.
+The active variant MUST be explicitly identifiable.
 
-Unknown variants MUST have explicitly defined behavior.
+A receiver MUST NOT infer the active variant from arbitrary memory contents.
+
 
 ---
 
-28. Option
+36. Option
 
-ULABI defines:
+ULABI SHOULD provide:
 
 Option<T>
 
-with two semantic states:
+with:
 
 None
-Some(value)
+Some(T)
 
-Option MUST be distinct from:
+The representation MUST distinguish the states unambiguously.
 
-null
+None MUST NOT be confused with:
 
-unless an explicit language adapter defines an equivalent mapping.
+zero;
+
+empty string;
+
+empty bytes;
+
+null pointer;
+
+invalid value.
+
+
 
 ---
 
-29. Result
+37. Result
 
-ULABI defines:
+ULABI SHOULD provide:
 
 Result<T,E>
 
 with:
 
-Ok(value)
-Err(error)
+Ok(T)
+Err(E)
 
-Result provides a language-neutral error-return mechanism.
+This provides a language-neutral error/result boundary.
 
-It allows languages with different exception and error systems to interoperate without requiring identical error models.
+An implementation MAY map this to:
+
+exceptions;
+
+error codes;
+
+tagged unions;
+
+algebraic data types;
+
+status objects;
+
+native result types.
+
+
+The ULABI boundary remains explicit.
+
 
 ---
 
-30. Error Values
+38. Error Type
 
-Errors SHOULD themselves be represented using structured ULABI types.
-
-Example:
+An error MAY be represented as:
 
 Error {
-    code: ErrorCode
-    message: String
-    details: Option<Bytes>
+    code
+    category
+    message
+    details
+    cause
 }
 
-Errors MUST have stable machine-readable identity.
+The complete error ABI SHALL be defined by the exception/error specification.
 
-Human-readable messages MUST NOT be the only error identifier.
+Error values MUST NOT rely solely on human-readable messages for machine interpretation.
 
----
-
-31. Map
-
-A Map represents key-value associations:
-
-Map<K,V>
-
-The Map specification MUST define:
-
-- key restrictions;
-- equality;
-- uniqueness;
-- ordering;
-- duplicate handling;
-- canonical encoding;
-- maximum size.
-
-If ordering is not guaranteed, implementations MUST NOT assume ordering.
 
 ---
 
-32. Set
+39. Handles
 
-A Set represents unique values.
-
-Set<T>
-
-The Set specification MUST define:
-
-- equality;
-- uniqueness;
-- ordering;
-- canonical representation.
-
----
-
-33. Generic Types
-
-ULABI may describe parameterized types:
-
-List<T>
-Map<K,V>
-Option<T>
-Result<T,E>
-
-Generic parameters MUST resolve to concrete boundary types before an actual ABI operation unless the interface explicitly supports runtime type descriptors.
-
----
-
-34. Type Descriptors
-
-ULABI SHOULD support runtime type descriptors for dynamic interoperability.
-
-A type descriptor may contain:
-
-TypeID
-Kind
-Version
-Parameters
-Constraints
-Encoding
-Semantics
-
-Type descriptors are especially useful for:
-
-- dynamic languages;
-- plugin systems;
-- RPC;
-- distributed systems;
-- reflection;
-- debugging;
-- schema validation;
-- dynamic loading.
-
----
-
-35. Dynamic Values
-
-A future Dynamic Value profile may support:
-
-DynamicValue {
-    TypeID
-    Version
-    Value
-}
-
-Dynamic values MUST remain bounded and validated.
-
-Implementations MUST NOT use dynamic typing as a mechanism to bypass security or compatibility validation.
-
----
-
-36. Type Compatibility
-
-ULABI compatibility MUST distinguish:
-
-Identical
-Compatible
-Convertible
-Conditionally Compatible
-Incompatible
-Unknown
-
-Two types must not be considered compatible merely because their names match.
-
----
-
-37. Safe Conversion
-
-Conversions SHOULD be classified as:
-
-Lossless
-Potentially Lossy
-Lossy
-Invalid
-
-Example:
-
-Int32 -> Int64
-
-may be lossless.
-
-Whereas:
-
-Int64 -> Int32
-
-may be lossy.
-
-An implementation MUST NOT silently perform a potentially lossy conversion when the interface requires exact preservation.
-
----
-
-38. Semantic Types
-
-ULABI should eventually support semantic type annotations.
+A Handle represents an opaque reference to an implementation-managed resource.
 
 Examples:
 
-Meters
-Seconds
-Currency
-Temperature
-Probability
-Percentage
-Identifier
-EmailAddress
-URL
-UUID
+Handle<File>
+Handle<Device>
+Handle<Stream>
+Handle<Process>
+Handle<Thread>
+Handle<Memory>
 
-Semantic types SHOULD be layered above primitive representations.
+A Handle MUST NOT expose private implementation memory.
+
+A Handle MUST have defined:
+
+identity;
+
+lifetime;
+
+ownership;
+
+access rights;
+
+invalidation behavior.
+
+
+
+---
+
+40. Resources
+
+A Resource is an externally managed object with lifecycle semantics.
+
+Examples:
+
+File
+Socket
+Device
+GPUContext
+Process
+Thread
+MemoryRegion
+Stream
+
+Resource types SHOULD normally be represented through Handles or capabilities.
+
+
+---
+
+41. Capabilities
+
+A Capability represents authority to perform a permitted operation.
+
+Conceptually:
+
+Capability {
+    identity
+    permissions
+    scope
+    lifetime
+}
+
+A capability MUST be non-forgeable within the applicable security model.
+
+Capabilities SHOULD be used instead of exposing unrestricted native resource access.
+
+
+---
+
+42. References
+
+ULABI distinguishes:
+
+Reference
+Handle
+Pointer
+Capability
+Offset
+
+These concepts MUST NOT be treated as interchangeable.
+
+A Reference represents an ABI-managed relationship.
+
+A Pointer represents an address.
+
+A Handle represents an opaque resource identity.
+
+A Capability represents authority.
+
+An Offset represents a relative location.
+
+
+---
+
+43. Raw Pointers
+
+Raw pointers MUST NOT be universal ULABI data types.
+
+A raw pointer MAY be used only where the applicable ABI profile guarantees:
+
+shared address space;
+
+valid lifetime;
+
+ownership;
+
+bounds;
+
+alignment;
+
+mutability;
+
+security;
+
+synchronization.
+
+
+Portable interfaces SHOULD use safer abstractions.
+
+
+---
+
+44. Buffer Descriptors
+
+A portable buffer SHOULD be described by a descriptor containing:
+
+BufferDescriptor {
+    data_reference
+    length
+    capacity
+    element_size
+    alignment
+    mutability
+    ownership
+    lifetime
+}
+
+Additional metadata MAY include:
+
+stride
+shape
+encoding
+memory_domain
+device
+access_mode
+
+
+---
+
+45. Memory Domain
+
+A buffer MAY identify its memory domain.
+
+Examples:
+
+HostMemory
+SharedMemory
+DeviceMemory
+GPUMemory
+NPUMemory
+FPGARegion
+PersistentMemory
+RemoteMemory
+
+A memory-domain declaration MUST NOT imply that the receiver can directly access that memory.
+
+Access authority MUST be explicit.
+
+
+---
+
+46. Tensors
+
+Tensor support SHOULD be provided through a profile rather than the minimal Core.
+
+Conceptually:
+
+Tensor<T> {
+    element_type
+    rank
+    shape
+    strides
+    layout
+    data
+}
+
+The Tensor profile SHOULD support:
+
+CPU;
+
+GPU;
+
+NPU;
+
+accelerator;
+
+distributed memory.
+
+
+
+---
+
+47. Matrix
+
+Matrix types MAY be represented as specialized tensors.
+
+Conceptually:
+
+Matrix<T> {
+    rows
+    columns
+    layout
+    data
+}
+
+The representation MUST explicitly define row-major, column-major, or other layout semantics.
+
+
+---
+
+48. Decimal
+
+Decimal arithmetic SHOULD be defined through an extension profile.
+
+The profile MUST specify:
+
+precision;
+
+scale;
+
+rounding;
+
+overflow;
+
+underflow;
+
+canonical encoding.
+
+
+Decimal values MUST NOT be silently converted to binary floating-point when exact decimal semantics are required.
+
+
+---
+
+49. Big Integer
+
+ULABI MAY provide:
+
+BigInt
+
+The representation MUST define:
+
+sign;
+
+magnitude;
+
+byte ordering;
+
+maximum size;
+
+encoding;
+
+overflow/resource limits.
+
+
+Unbounded mathematical concepts MUST still have explicit implementation resource limits.
+
+
+---
+
+50. Timestamp
+
+A Timestamp SHOULD be defined by a dedicated time profile.
+
+Conceptually:
+
+Timestamp {
+    epoch
+    seconds
+    fractional_units
+}
+
+The representation MUST explicitly define:
+
+epoch;
+
+precision;
+
+timezone semantics;
+
+range.
+
+
+
+---
+
+51. Duration
+
+A Duration represents elapsed time.
+
+Conceptually:
+
+Duration {
+    seconds
+    fractional_units
+}
+
+Duration MUST NOT automatically be interpreted as a calendar interval.
+
+
+---
+
+52. Units and Quantities
+
+ULABI MAY provide a Units profile.
+
+A quantity could contain:
+
+Quantity {
+    value
+    unit
+}
 
 For example:
 
-Meters = Float64 + UnitMetadata
+5 meters
+10 kilograms
+20 seconds
 
-This allows implementations to preserve semantic meaning without forcing a particular programming-language representation.
+Unit identity MUST be explicit.
+
 
 ---
 
-39. Units
+53. Streams
 
-A Units Profile may define dimensional metadata.
+A Stream represents potentially unbounded or incrementally produced data.
+
+Conceptually:
+
+Stream<T>
+
+A Stream MUST define:
+
+element type;
+
+ordering;
+
+completion;
+
+cancellation;
+
+failure;
+
+backpressure;
+
+ownership;
+
+lifetime.
+
+
+Stream semantics belong primarily to the streaming profile.
+
+
+---
+
+54. Futures
+
+ULABI MAY provide:
+
+Future<T>
+
+A Future represents a value that may become available later.
+
+It MUST define:
+
+Pending
+Ready
+Failed
+Cancelled
+
+Future semantics belong primarily to the asynchronous execution profile.
+
+
+---
+
+55. Async Functions
+
+An asynchronous function MAY return:
+
+Future<T>
+
+or:
+
+Stream<T>
+
+The calling-convention specification MUST define how these values cross the ABI boundary.
+
+
+---
+
+56. Recursive Types
+
+ULABI MAY support recursive type definitions.
 
 Example:
 
-Quantity {
-    value: Float64
-    unit: UnitID
+Node {
+    value: I64
+    next: Option<Handle<Node>>
 }
 
-Implementations SHOULD reject incompatible dimensional operations where the profile requires safety.
+Recursive types MUST have explicit lifecycle semantics.
+
+The specification MUST prevent unbounded decoding or allocation attacks.
+
 
 ---
 
-40. Identifiers
+57. Generic Types
 
-ULABI should support standardized identifier types such as:
+ULABI MAY represent generic types through instantiated type descriptors.
 
-UUID
-URI
-ResourceID
-InterfaceID
-TypeID
-FunctionID
-CapabilityID
+For example:
 
-Identifiers MUST have explicit encoding and comparison rules.
+List<I32>
+
+and:
+
+List<String>
+
+MUST have distinguishable type identities when necessary.
+
+ULABI MUST NOT require participating languages to implement generics internally.
+
 
 ---
 
-41. Handles
+58. Type Parameters
 
-A "Handle" represents an opaque reference to an externally managed resource.
+A generic ULABI contract MAY conceptually contain:
+
+GenericType {
+    name
+    parameters
+    constraints
+}
+
+However, binary interoperability MUST ultimately resolve generic parameters into concrete ABI semantics.
+
+
+---
+
+59. Type Aliases
+
+A type alias MAY provide another name for an existing semantic type.
+
+Example:
+
+UserID = U128
+
+An alias MUST NOT silently create a new semantic type unless explicitly declared as a distinct type.
+
+
+---
+
+60. Newtype / Distinct Semantic Types
+
+ULABI SHOULD support semantically distinct types sharing the same representation.
+
+Example:
+
+UserID
+AccountID
+TransactionID
+
+All could use:
+
+U128
+
+internally while remaining semantically distinct.
+
+This prevents accidental interchange of values that happen to share representation.
+
+
+---
+
+61. Type Constraints
+
+A type MAY define constraints.
 
 Examples:
 
-- file;
-- socket;
-- device;
-- process;
-- shared-memory region;
-- accelerator resource.
+String(max_length=1024)
 
-Handles MUST NOT expose implementation-specific memory addresses as their universal identity.
+U32(range=0..100)
 
----
+Bytes(max_length=4096)
 
-42. Resource
+Constraints MUST be machine-readable where they affect validation.
 
-A "Resource" represents an externally managed entity with lifecycle semantics.
-
-A resource contract SHOULD specify:
-
-Create
-Acquire
-Use
-Transfer
-Release
-Destroy
-
-Not every resource supports every operation.
 
 ---
 
-43. Capability
-
-A "Capability" represents an authority granted to a component.
-
-Capabilities MUST be opaque and non-forgeable where the security profile requires it.
-
-Examples:
-
-FileReadCapability
-NetworkCapability
-GPUCapability
-DeviceCapability
-
-The type system itself does not grant authority.
-
-Security profiles determine capability semantics.
-
----
-
-44. Ownership Metadata
-
-A ULABI value crossing a boundary MUST have explicit ownership semantics when the value is not trivially copied.
-
-Possible states include:
-
-Borrowed
-Owned
-Shared
-Transferred
-ImmutableShared
-
-The exact lifecycle contract is defined by the memory model.
-
----
-
-45. Mutability
-
-ULABI SHOULD distinguish:
-
-Immutable
-Mutable
-ReadOnly
-WriteOnly
-SharedMutable
-
-Mutability MUST NOT be inferred solely from the source-language type.
-
----
-
-46. Nullability
+62. Nullability
 
 ULABI MUST distinguish:
 
 Absent
-Null
+Present
 Invalid
-Unknown
-Value
 
-where these states are semantically relevant.
+where the contract requires these states.
 
-Languages with a single null concept MUST use an adapter that maps their semantics explicitly.
+Null MUST NOT be used ambiguously to represent multiple semantic conditions.
 
----
+Option<T> SHOULD be preferred for optional values.
 
-47. Pointers
-
-Raw pointers are NOT Core semantic data types.
-
-A raw machine pointer is:
-
-- process-specific;
-- architecture-specific;
-- potentially unsafe;
-- potentially meaningless outside its address space.
-
-Pointers MAY be used internally by implementations.
-
-Cross-boundary pointer exchange requires an explicit memory or shared-memory profile.
 
 ---
 
-48. Zero-Copy Data
+63. Invalid Values
 
-ULABI may support zero-copy transfer.
+Every ABI-visible type SHOULD define its valid value domain.
 
-Zero-copy MUST NOT mean:
+An implementation MUST reject values outside that domain unless an explicit recovery policy exists.
 
-«Ignore ownership and lifetime.»
+Invalid values MUST NOT be silently converted into valid values without declaration.
 
-A zero-copy value MUST have explicit:
-
-- storage ownership;
-- lifetime;
-- mutability;
-- synchronization;
-- access permissions;
-- invalidation behavior.
 
 ---
 
-49. Shared Memory
+64. Default Values
 
-Shared-memory values require explicit synchronization semantics.
+A ULABI type MAY define a default value.
 
-The contract MUST define:
+The absence of a default MUST be distinguishable from:
 
-- ownership;
-- visibility;
-- synchronization;
-- mutation;
-- lifetime;
-- process boundaries;
-- security permissions.
+zero
+false
+empty
+None
+null
 
----
-
-50. Streaming Types
-
-Large values SHOULD be representable as streams.
-
-Example:
-
-Stream<Bytes>
-Stream<Record>
-Stream<T>
-
-Streaming prevents the ABI from requiring an entire dataset to exist in memory simultaneously.
 
 ---
 
-51. Large Data
+65. Equality
 
-ULABI implementations MUST support explicit resource limits.
+Every semantic type SHOULD define equality semantics.
+
+Equality MAY be:
+
+Bitwise
+Structural
+Semantic
+Identity-based
+
+The contract MUST specify which form applies.
+
+
+---
+
+66. Ordering
+
+Types that support ordering MUST define the ordering model.
 
 Examples:
 
-MaximumStringSize
-MaximumBytesSize
-MaximumListLength
-MaximumRecordDepth
-MaximumNestingDepth
-MaximumMessageSize
+Numeric ascending
+Lexicographic
+Timestamp ordering
+Explicit application ordering
 
-Unlimited values MUST NOT be assumed.
+An implementation MUST NOT assume an ordering that the ULABI contract does not provide.
 
-"Universal" does not mean unlimited.
 
 ---
 
-52. Recursive Types
+67. Hashing
 
-ULABI may support recursive structures.
+ULABI MUST distinguish:
+
+Semantic equality
+Hash representation
+Implementation hash
+
+A language-specific hash function MUST NOT automatically become a ULABI semantic hash.
+
+Canonical hashing MAY be defined by a future profile.
+
+
+---
+
+68. Serialization
+
+Serialization converts a ULABI semantic value into a transportable representation.
+
+The serialization system MUST define:
+
+type identity;
+
+encoding;
+
+length;
+
+byte order;
+
+validation;
+
+version;
+
+compatibility;
+
+limits.
+
+
+
+---
+
+69. Canonical Encoding
+
+Where canonical encoding is required:
+
+Value
+  |
+  v
+Canonical Encoder
+  |
+  v
+Canonical Bytes
+
+Two implementations encoding the same semantic value MUST produce equivalent canonical representations.
+
+Canonical encoding is especially important for:
+
+hashing;
+
+signatures;
+
+persistence;
+
+distributed communication;
+
+deterministic testing.
+
+
+
+---
+
+70. Deserialization
+
+A decoder MUST:
+
+1. Validate the encoding.
+
+
+2. Validate type identity.
+
+
+3. Validate version.
+
+
+4. Validate length.
+
+
+5. Validate constraints.
+
+
+6. Validate resource limits.
+
+
+7. Construct the semantic value.
+
+
+8. Report failure explicitly.
+
+
+
+A decoder MUST NOT blindly trust incoming data.
+
+
+---
+
+71. Maximum Size
+
+Every implementation MUST be able to impose resource limits.
+
+Possible limits include:
+
+maximum string size
+maximum byte sequence size
+maximum array length
+maximum record nesting
+maximum recursion depth
+maximum tensor size
+maximum message size
+
+An implementation MUST fail safely when limits are exceeded.
+
+
+---
+
+72. Resource Exhaustion Protection
+
+Type decoding MUST protect against:
+
+allocation bombs;
+
+recursive structures;
+
+oversized collections;
+
+malicious lengths;
+
+integer overflow;
+
+excessive nesting;
+
+decompression bombs;
+
+denial-of-service inputs.
+
+
+Resource limits MUST be explicit.
+
+
+---
+
+73. Endianness
+
+Portable canonical representations SHOULD use a defined byte order.
+
+Native ABI mappings MAY use native byte order where explicitly defined.
+
+A receiver MUST know which byte ordering applies.
+
+
+---
+
+74. Alignment
+
+Fixed-layout ABI-visible types MUST define alignment requirements where alignment affects interpretation or access.
+
+Portable serialized forms SHOULD avoid architecture-dependent alignment assumptions.
+
+
+---
+
+75. Padding
+
+Padding bytes in ABI-visible structures MUST have defined behavior.
+
+Uninitialized padding MUST NOT leak sensitive information.
+
+Canonical serialization SHOULD avoid unspecified padding.
+
+
+---
+
+76. Type Conversion
+
+ULABI distinguishes:
+
+Implicit Conversion
+Explicit Conversion
+Lossless Conversion
+Lossy Conversion
+Incompatible Conversion
+
+Conversions MUST be explicitly classified.
+
+
+---
+
+77. Lossless Conversion
+
+A conversion is lossless when the destination type preserves the complete semantic value.
 
 Example:
 
-Tree =
-    Empty
-    Node(
-        value: Int,
-        left: Tree,
-        right: Tree
-    )
+U8 -> U16
 
-Recursive types MUST have bounded decoding and validation behavior.
+may be lossless.
 
-Implementations MUST defend against malicious recursive structures.
 
 ---
 
-53. Cyclic Data
+78. Lossy Conversion
 
-Cyclic object graphs are not automatically part of the Core value model.
-
-A reference/cycle profile MAY define them.
-
-Such a profile MUST specify:
-
-- identity;
-- reference tracking;
-- ownership;
-- lifetime;
-- cycle detection;
-- serialization behavior.
-
----
-
-54. Canonical Representation
-
-A ULABI value MUST have a deterministic canonical representation whenever canonical encoding is required.
-
-Canonical encoding is important for:
-
-- hashing;
-- signatures;
-- caching;
-- comparison;
-- reproducible builds;
-- deterministic testing;
-- distributed systems.
-
-Equivalent semantic values SHOULD produce equivalent canonical representations.
-
----
-
-55. Endianness
-
-ULABI boundary representations MUST NOT depend on the host CPU's native byte order.
-
-The canonical encoding MUST define byte order explicitly.
-
----
-
-56. Alignment
-
-ULABI semantic types MUST NOT assume native machine alignment.
-
-Alignment requirements belong to the implementation ABI or a specific optimized profile.
-
-This allows ULABI to operate across architectures with different alignment requirements.
-
----
-
-57. Representation Independence
-
-The following are implementation details unless explicitly exposed by a profile:
-
-- pointer size;
-- register size;
-- stack layout;
-- object header layout;
-- garbage collector metadata;
-- vtable layout;
-- compiler-specific padding;
-- language-specific object representation.
-
-ULABI interoperates through its defined boundary representation.
-
----
-
-58. ABI Type Mapping
-
-A language adapter maps local types into ULABI types.
+A conversion is lossy when information may be removed.
 
 Example:
 
-Language A
-    |
-    | Type Mapping
-    v
-ULABI Type
-    |
-    | Type Mapping
-    v
-Language B
+U64 -> U32
 
-The adapter MUST document mappings.
+The operation MUST NOT silently discard information unless the contract explicitly permits it.
+
+
+---
+
+79. Numeric Conversion
+
+Numeric conversions MUST define:
+
+range;
+
+overflow;
+
+rounding;
+
+saturation;
+
+truncation;
+
+NaN;
+
+infinity;
+
+signedness.
+
+
+
+---
+
+80. Text Conversion
+
+Text conversion MUST define:
+
+source encoding;
+
+destination encoding;
+
+invalid sequences;
+
+normalization;
+
+replacement policy.
+
+
+
+---
+
+81. Structural Compatibility
+
+Two structures MAY be compatible if their externally visible semantic contracts are compatible even when their internal layouts differ.
+
+Compatibility analysis MUST consider:
+
+field identity;
+
+field type;
+
+optionality;
+
+constraints;
+
+defaults;
+
+version.
+
+
+
+---
+
+82. Binary Compatibility
+
+Binary compatibility exists when two implementations can exchange ABI representations without reinterpretation errors.
+
+Binary compatibility MUST NOT be inferred merely because source-language types have similar names.
+
+
+---
+
+83. Semantic Compatibility
+
+Semantic compatibility means that exchanged values retain their intended meaning.
 
 Example:
 
-Language A: string
-        ->
-ULABI: String
-        ->
-Language B: text object
+meters
+
+and:
+
+feet
+
+may use the same numeric representation while remaining semantically different.
+
 
 ---
 
-59. Unsupported Types
+84. Versioning
 
-A language implementation may contain types with no direct ULABI equivalent.
+Every externally visible evolving type SHOULD have a version.
 
-The implementation MUST then choose one of:
+Conceptually:
 
-1. Provide an explicit adapter.
-2. Represent the value using a standardized generic type.
-3. Use an extension profile.
-4. Reject the operation.
+TypeName/v1
+TypeName/v2
 
-It MUST NOT silently reinterpret an unsupported type.
+Compatible additions MAY use the same major compatibility family.
 
----
+Breaking changes MUST create a new compatibility boundary.
 
-60. Type Erasure
-
-Type erasure MAY be used internally.
-
-However, type information required by the ULABI contract MUST remain available at the boundary.
 
 ---
 
-61. Type Versioning
+85. Backward Compatibility
 
-Types MUST be versionable.
+A newer implementation SHOULD be able to consume older compatible representations.
 
-A type evolution SHOULD distinguish:
+This requires:
 
-Compatible Change
-Breaking Change
-Optional Extension
-Semantic Change
-Encoding Change
+stable field identities;
 
-A change to the semantic meaning of an existing type MUST be treated as potentially breaking.
+explicit defaults;
 
----
+unknown-field handling;
 
-62. Forward Compatibility
+version negotiation.
 
-An implementation should be able to encounter future type information without catastrophic failure.
 
-Where permitted:
-
-Known field -> process
-Unknown field -> preserve or ignore according to contract
-
-Unknown information MUST NOT automatically become trusted executable behavior.
 
 ---
 
-63. Backward Compatibility
+86. Forward Compatibility
 
-New implementations SHOULD be able to consume older valid representations when compatibility is declared.
+An older implementation MAY encounter newer fields or variants.
 
-Compatibility MUST be determined by the contract rather than by best-effort guessing.
+The contract MUST define whether unknown values are:
 
----
+Ignored
+Preserved
+Rejected
+Converted
+Escalated
 
-64. Type Negotiation
-
-Dynamic environments may negotiate supported types.
-
-Example:
-
-Peer A:
-Supports String v1
-Supports Bytes v1
-Supports Record v1
-
-Peer B:
-Supports String v1
-Supports Bytes v1
-Supports Record v2
-
-The negotiation mechanism should identify a mutually compatible representation.
 
 ---
 
-65. Capability Discovery
+87. Unknown Fields
 
-Type capability discovery may report:
+For extensible records, unknown fields SHOULD be safely ignorable when they do not affect required semantics.
 
-SupportedType
-SupportedVersion
-SupportedEncoding
-MaximumSize
-OptionalFeature
+An implementation MUST NOT interpret unknown fields as known fields merely because their physical layout resembles a known field.
 
-Discovery MUST NOT itself grant access to protected resources.
 
 ---
 
-66. Validation
+88. Unknown Variants
 
-Every boundary value SHOULD pass validation appropriate to its type.
+Unknown variants MUST have explicit behavior.
 
-Validation may include:
+Possible behavior:
 
-- type identity;
-- version;
-- encoding;
-- size;
-- structure;
-- range;
-- ownership;
-- capability requirements;
-- semantic constraints.
+Reject
+Return UnknownVariant
+Preserve OpaqueValue
+Fallback
 
-Invalid values MUST produce explicit failures.
+The selected behavior MUST be defined by the type contract.
+
 
 ---
 
-67. Security Requirements
+89. Type Safety Boundary
 
-Type decoding MUST be treated as an attack surface.
+A ULABI implementation MUST validate externally supplied type information before using it.
 
-Implementations MUST defend against:
+The boundary is:
 
-- oversized values;
-- malformed encodings;
-- integer overflow;
-- excessive nesting;
-- recursive bombs;
-- allocation exhaustion;
-- parser differentials;
-- ambiguous encodings;
-- type confusion;
-- forged handles;
-- invalid capability references.
+Untrusted Input
+       |
+       v
+Validation
+       |
+       v
+Type Resolution
+       |
+       v
+Constraint Validation
+       |
+       v
+Safe Value
+
 
 ---
 
-68. Type Confusion Prevention
+90. Security Requirements
 
-A value MUST NOT be interpreted as a different semantic type merely because its raw representation happens to be compatible.
+Type handling MUST defend against:
+
+integer overflow;
+
+integer underflow;
+
+truncation;
+
+invalid encodings;
+
+malformed lengths;
+
+recursive structures;
+
+excessive allocations;
+
+type confusion;
+
+use-after-release;
+
+invalid handles;
+
+capability escalation;
+
+parser differentials.
+
+
+
+---
+
+91. Type Confusion
+
+A receiver MUST NOT interpret a value as a different type merely because its binary representation happens to be compatible.
 
 For example:
 
 UserID
 
-must not automatically become:
+MUST NOT automatically be accepted as:
 
-FileID
+AccountID
 
-merely because both are represented as strings.
+merely because both use U128.
 
-Semantic type identity matters.
-
----
-
-69. Resource Limits
-
-Every implementation SHOULD support configurable limits for:
-
-MaximumTypeDepth
-MaximumCollectionLength
-MaximumStringSize
-MaximumBytesSize
-MaximumRecordSize
-MaximumVariantSize
-MaximumAllocation
-MaximumStreamWindow
-
-Limits SHOULD fail closed where required by the security profile.
 
 ---
 
-70. Determinism
+92. Ownership Metadata
 
-Where a deterministic profile is enabled:
+A type MAY include ownership metadata:
 
-- canonical encoding MUST be deterministic;
-- type identity MUST be deterministic;
-- field ordering MUST be deterministic where required;
-- numeric encoding MUST be deterministic;
-- error identity MUST be deterministic.
+Owned
+Borrowed
+Shared
+Immutable
+Transferred
 
----
+The memory model defines the detailed ownership contract.
 
-71. Internationalization
+This document defines the requirement that type metadata MUST be capable of expressing ownership where required.
 
-ULABI's semantic type system MUST support international text.
-
-It SHOULD support:
-
-- Unicode;
-- locale identifiers;
-- language identifiers;
-- time zones;
-- culturally sensitive formatting through higher-level profiles.
-
-ULABI Core SHOULD NOT impose one human language.
 
 ---
 
-72. Localization Separation
+93. Lifetime Metadata
 
-Data semantics MUST be separated from presentation.
+A type that crosses an ABI boundary MUST have a defined lifetime model where the value is not self-contained.
+
+Possible states include:
+
+CallScoped
+Borrowed
+Owned
+ReferenceCounted
+ExplicitRelease
+CapabilityScoped
+SessionScoped
+
+
+---
+
+94. Mutability
+
+A value MAY be:
+
+Immutable
+Mutable
+ConditionallyMutable
+ReadOnly
+WriteOnly
+
+Mutability MUST be explicit where it affects ABI behavior.
+
+
+---
+
+95. Zero-Copy Types
+
+ULABI MAY support zero-copy data exchange.
+
+Zero-copy MUST NOT bypass:
+
+ownership;
+
+lifetime;
+
+bounds;
+
+alignment;
+
+security;
+
+synchronization.
+
+
+Zero-copy is an optimization, not a semantic requirement.
+
+
+---
+
+96. Copyable Types
+
+A type MAY be marked as safely copyable.
+
+Copy semantics MUST be explicit.
+
+For resources, copying a handle MUST NOT automatically duplicate the underlying resource unless the resource contract specifies duplication semantics.
+
+
+---
+
+97. Move Semantics
+
+A type MAY support transfer/move semantics.
+
+A moved value MUST have explicitly defined post-transfer behavior.
 
 For example:
 
-Amount = 1000
-Currency = USD
+Owned Value
+     |
+     | transfer
+     v
+New Owner
 
-is preferable to:
+The old owner MUST NOT continue to use the value when the contract prohibits it.
 
-"$1,000"
-
-when machine interoperability is required.
-
----
-
-73. Time
-
-Time SHOULD use explicit semantic types.
-
-For example:
-
-Timestamp
-Duration
-
-must not be represented solely through a language-specific integer without defining:
-
-- epoch;
-- precision;
-- timezone semantics;
-- valid range.
 
 ---
 
-74. Decimal and Financial Data
+98. Shared Values
 
-A financial profile SHOULD define exact decimal semantics.
+Shared values MAY be represented through:
 
-Binary floating point MUST NOT automatically be assumed suitable for exact monetary values.
+immutable references;
 
-Example:
+reference-counted handles;
 
-Decimal {
-    coefficient
-    scale
-}
+shared-memory descriptors;
 
-The exact representation will be specified by a future numeric profile.
+capabilities.
 
----
 
-75. Tensor and Matrix Data
+Synchronization semantics MUST be explicitly defined.
 
-A future accelerator profile may define:
-
-Tensor<T>
-
-with metadata such as:
-
-shape
-element_type
-layout
-stride
-device
-memory_location
-
-Such functionality belongs to an extension profile rather than being required from every ULABI implementation.
 
 ---
 
-76. Future and Async Values
+99. Thread Safety
 
-Asynchronous results may use:
+A type MAY declare:
 
-Future<T>
+ThreadSafe
+ThreadConfined
+Sendable
+NonSendable
+Synchronised
+Immutable
 
-The Future type SHOULD be defined by the Async Profile.
+The declaration MUST have defined semantics.
 
-The Core type system must remain usable by synchronous systems.
-
----
-
-77. Streams
-
-Streaming types SHOULD support:
-
-Open
-Read
-Pause
-Resume
-Cancel
-Close
-Error
-End
-
-The streaming lifecycle belongs to the Streaming Profile.
 
 ---
 
-78. Type Effects
+100. Distributed Types
 
-A type MAY carry metadata describing effects.
+A type intended to cross machines MUST define:
 
-Examples:
+serialization;
 
-Pure
-ResourceBound
-CapabilityBound
-NonDeterministic
-Sensitive
+identity;
 
-Effects are metadata, not substitutes for the security model.
+lifetime;
 
----
+failure;
 
-79. Sensitive Data
+version;
 
-A Security Profile MAY identify sensitive types.
+transport independence;
 
-Examples:
+security requirements.
 
-Secret
-Credential
-PrivateKey
-AuthenticationToken
-PersonalData
 
-Sensitive data SHOULD support policies for:
+A local pointer MUST NOT become a distributed reference automatically.
 
-- zeroization;
-- restricted logging;
-- restricted serialization;
-- access control;
-- redaction.
 
 ---
 
-80. Cryptographic Types
+101. Location-Aware References
 
-A Cryptographic Profile may define:
+A distributed reference MAY contain:
 
-Hash
-Signature
-PublicKey
-PrivateKey
-Ciphertext
-Nonce
-KeyIdentifier
-
-Cryptographic types MUST identify algorithms and parameters explicitly where required.
-
----
-
-81. Type Safety Boundary
-
-The ULABI boundary MUST be treated as a type-safety boundary.
-
-The implementation MUST NOT assume that values received from another component are trustworthy merely because they are encoded correctly.
-
-Validation and authorization remain separate responsibilities.
-
----
-
-82. Type Mapping Contract
-
-Every language binding SHOULD provide a type mapping table.
-
-Example:
-
-ULABI Type       Local Type
---------------------------------
-Bool             boolean
-Int32            language-specific 32-bit integer
-UInt64           language-specific 64-bit integer
-String           native text type
-Bytes            byte array
-List<T>          native collection
-Option<T>        optional type
-Result<T,E>      result/error type
-Record           struct/class/object
-
-Mappings must document:
-
-- lossless conversions;
-- lossy conversions;
-- ownership;
-- lifetime;
-- mutability;
-- exceptions/errors;
-- unsupported cases.
-
----
-
-83. Type Adapter Safety
-
-Adapters MUST NOT silently:
-
-- truncate integers;
-- alter Unicode text;
-- discard fields;
-- change units;
-- change time zones;
-- discard precision;
-- change ownership;
-- change mutability;
-- grant capabilities.
-
-Any such behavior must be explicit.
-
----
-
-84. Cross-Language Equality
-
-ULABI SHOULD distinguish:
-
-Representation Equality
-Semantic Equality
-Identity Equality
-
-Two values can have different internal representations while being semantically equal.
-
----
-
-85. Hashing
-
-If a type supports canonical hashing, the hash MUST be based on the canonical semantic representation.
-
-Implementation-specific memory layouts MUST NOT be used as universal hashes.
-
----
-
-86. Serialization
-
-Serialization is the conversion of a ULABI value into a boundary representation.
-
-Serialization MUST be:
-
-- deterministic where required;
-- validated;
-- version-aware;
-- bounded;
-- type-aware.
-
----
-
-87. Deserialization
-
-Deserialization MUST validate input before exposing the resulting value to application code.
-
-Implementations SHOULD use staged processing:
-
-Input
-  |
-Decode
-  |
-Validate
-  |
-Type Check
-  |
-Resource Check
-  |
-Ownership Assignment
-  |
-Application Value
-
----
-
-88. Failure Behavior
-
-Type failures MUST produce explicit failure categories.
-
-Possible categories:
-
-InvalidEncoding
-UnknownType
-UnsupportedVersion
-TypeMismatch
-RangeError
-SizeLimitExceeded
-MalformedValue
-InvalidReference
-CapabilityViolation
-ResourceExhausted
-
-Exact error identifiers belong to the Core Error Model.
-
----
-
-89. Formal Invariants
-
-A conforming ULABI type implementation MUST preserve:
-
-Invariant 1
-
-A valid value has a valid type identity.
-
-Invariant 2
-
-A value cannot be interpreted as another semantic type without an explicit conversion.
-
-Invariant 3
-
-Canonical representations are deterministic when canonical mode is required.
-
-Invariant 4
-
-Invalid representations MUST NOT be exposed as valid application values.
-
-Invariant 5
-
-Ownership and lifetime MUST remain consistent across the boundary.
-
-Invariant 6
-
-Lossy conversions MUST be explicit.
-
-Invariant 7
-
-Resource limits MUST be enforceable.
-
-Invariant 8
-
-Unknown future information MUST NOT automatically grant authority.
-
-Invariant 9
-
-Type evolution MUST preserve declared compatibility guarantees.
-
-Invariant 10
-
-Language-specific implementation details MUST NOT become accidental ULABI requirements.
-
----
-
-90. Conformance Levels
-
-ULABI may define:
-
-Level 0 — Core Types
-
-Required:
-
-- Bool
-- signed integers
-- unsigned integers
-- floating point
-- Char
-- String
-- Bytes
-- Unit
-
-Level 1 — Structural Types
-
-Adds:
-
-- List
-- Tuple
-- Record
-- Enum
-- Variant
-
-Level 2 — Result Types
-
-Adds:
-
-- Option
-- Result
-- standardized errors
-
-Level 3 — Resource Types
-
-Adds:
-
-- Handle
-- Resource
-- Capability
-
-Level 4 — Advanced Types
-
-Adds selected profiles:
-
-- Map
-- Set
-- Timestamp
-- Duration
-- Decimal
-- Tensor
-- Stream
-- Future
-
-Implementations MUST declare exactly which levels and profiles they support.
-
----
-
-91. Conformance Testing
-
-The ULABI conformance suite SHOULD test:
-
-- encoding;
-- decoding;
-- type identity;
-- integer boundaries;
-- floating-point edge cases;
-- Unicode;
-- malformed strings;
-- collection limits;
-- nested structures;
-- unknown fields;
-- unknown variants;
-- optional values;
-- result values;
-- error values;
-- ownership;
-- lifetime;
-- version compatibility;
-- canonical representations;
-- invalid conversions;
-- resource exhaustion.
-
----
-
-92. Fuzz Testing
-
-The type system SHOULD be fuzz tested against:
-
-- random values;
-- malformed values;
-- truncated values;
-- oversized values;
-- recursive structures;
-- deeply nested structures;
-- invalid type identifiers;
-- invalid versions;
-- invalid encodings;
-- boundary numeric values.
-
-A conforming implementation SHOULD survive malformed input without memory corruption or uncontrolled resource consumption.
-
----
-
-93. Differential Testing
-
-Multiple ULABI implementations SHOULD be able to process the same canonical test vectors.
-
-Example:
-
-Implementation A
-        |
-        +---- Test Vector ----+
-        |                     |
-Implementation B         Implementation C
-
-Equivalent valid values should produce equivalent canonical results.
-
----
-
-94. Reference Test Vectors
-
-ULABI SHOULD maintain official test vectors for:
-
-- every Core primitive;
-- every structural type;
-- every canonical encoding;
-- boundary values;
-- invalid values;
-- compatibility cases.
-
-Test vectors SHOULD be implementation-independent.
-
----
-
-95. Language Independence
-
-ULABI MUST remain independent of any particular programming language.
-
-The following languages may implement ULABI:
-
-- C
-- C++
-- Rust
-- Go
-- Java
-- C#
-- Python
-- Swift
-- Kotlin
-- Fortran
-- Ada
-- JavaScript
-- TypeScript
-- Zig
-- D
-- Julia
-- Lua
-- Ruby
-- PHP
-- and future languages.
-
-No language receives privileged status.
-
----
-
-96. Zamani and Sankofa Independence
-
-Zamani and Sankofa are separate programming languages.
-
-ULABI MUST NOT merge them into one language.
-
-ULABI MUST NOT define their syntax.
-
-ULABI MUST NOT require them to share implementations.
-
-Either language may independently implement a ULABI adapter.
-
-Conceptually:
-
-Zamani
-   |
-   v
-ULABI Adapter
-   |
-   v
-ULABI
-   ^
-   |
-ULABI Adapter
-   ^
-   |
-Sankofa
-
-This is an interoperability relationship, not a language relationship.
-
-The same architecture applies to every other programming language.
-
----
-
-97. ABI Boundary Principle
-
-The central rule of this specification is:
-
-«A ULABI type describes what a value means at an interoperability boundary, not how a programming language must represent that value internally.»
-
-This principle is mandatory for long-term universality.
-
----
-
-98. Extensibility
-
-New types MUST be introduced through a controlled extension process.
-
-An extension SHOULD define:
-
-1. Type identity.
-2. Semantic meaning.
-3. Encoding.
-4. Validation.
-5. Ownership.
-6. Lifetime.
-7. Compatibility.
-8. Security.
-9. Resource limits.
-10. Conformance tests.
-11. Reference implementation.
-
-No extension should modify the meaning of an existing Core type.
-
----
-
-99. Stability Rules
-
-Core types SHOULD be extremely stable.
-
-Breaking changes SHOULD require:
-
-- new type identity;
-- new major specification version;
-- compatibility analysis;
-- migration documentation;
-- conformance updates.
-
-Existing valid programs SHOULD continue functioning across compatible ULABI versions.
-
----
-
-100. Future-Proofing
-
-ULABI must be designed for technologies that do not yet exist.
-
-The type system should therefore avoid assumptions about:
-
-- future processors;
-- future memory architectures;
-- future programming languages;
-- future accelerators;
-- future operating systems;
-- future distributed systems;
-- future computing models.
-
-The Core defines stable semantics.
-
-Profiles provide specialized capabilities.
-
----
-
-101. Security Philosophy
-
-The type system follows:
-
-Parse
-  ↓
-Validate
-  ↓
-Authenticate if required
-  ↓
-Authorize if required
-  ↓
-Convert
-  ↓
-Expose
-
-A valid type is not automatically an authorized resource.
-
-Type safety and authorization are separate layers.
-
----
-
-102. Failure-Oriented Type Design
-
-ULABI assumes that type failures will occur.
-
-Therefore every implementation SHOULD be prepared for:
-
-Malformed Input
-      ↓
-Detection
-      ↓
-Classification
-      ↓
-Containment
-      ↓
-Explicit Failure
-      ↓
-Recovery / Retry / Escalation
-
-A malformed value MUST NOT cause undefined behavior.
-
----
-
-103. Self-Healing Interaction
-
-Self-healing is not part of the semantic definition of a type.
-
-However, the Reliability and Self-Healing Profiles MAY use type metadata to determine safe recovery actions.
-
-For example:
-
-Type
- |
- +-- Safe to retry?
- |
- +-- Idempotent?
- |
- +-- Reconstructible?
- |
- +-- Persistent?
- |
- +-- Sensitive?
- |
- +-- Recoverable?
-
-The type system provides metadata.
-
-The self-healing system determines recovery according to explicit policies.
-
----
-
-104. No Autonomous Semantic Mutation
-
-An implementation MUST NOT change the meaning of an existing ULABI type merely because:
-
-- decoding failed;
-- a type appears unfamiliar;
-- recovery was attempted;
-- another implementation behaves differently.
-
-Semantic changes require specification-controlled evolution.
-
----
-
-105. Recommended Core Type Set
-
-The initial Core should remain approximately:
-
-Bool
-
-Int8
-Int16
-Int32
-Int64
-Int128
-
-UInt8
-UInt16
-UInt32
-UInt64
-UInt128
-
-Float32
-Float64
-
-Char
-String
-Bytes
-Unit
-
-List
-Tuple
-Record
-Enum
-Variant
-
-Option
-Result
-
-Additional types should be evaluated individually.
-
----
-
-106. Recommended Extension Type Set
-
-Potential extensions include:
-
-Map
-Set
-
-Timestamp
-Duration
-Date
-Time
-
-Decimal
-BigInteger
-Complex
-
-UUID
-URI
-
-Handle
-Resource
+ResourceID
+Location
 Capability
+Version
+Expiry
 
-Stream
-Future
+Location transparency MUST NOT hide remote execution semantics.
 
-Tensor
-Matrix
-Vector
-
-Hash
-Signature
-PublicKey
-PrivateKey
-
-Quantity
-Unit
 
 ---
 
-107. Implementation Requirements
+102. Device Types
 
-A ULABI type implementation SHOULD provide:
+Device-backed values SHOULD use opaque handles or capabilities.
 
-Type Registry
-Type Identity
-Type Validator
-Encoder
-Decoder
-Compatibility Checker
-Conversion Engine
-Resource Limiter
-Canonicalizer
-Test Vector Runner
+Examples:
 
-The exact architecture remains implementation-specific.
+Handle<GPU>
+Handle<NPU>
+Handle<FPGA>
+Handle<Device>
+
+Device-specific memory MUST be explicitly identified.
+
+
+---
+
+103. Hardware-Aware Numeric Types
+
+Hardware-specific types MAY be introduced through profiles.
+
+Examples:
+
+Vector<T>
+SIMD<T,N>
+Tensor<T>
+DeviceBuffer<T>
+
+The Core MUST remain independent of any particular accelerator.
+
+
+---
+
+104. Quantum and Future Compute Types
+
+Future compute models MAY define additional types.
+
+Examples include:
+
+QuantumState
+QuantumRegister
+QuantumMeasurement
+FutureComputeObject
+
+Such types MUST be introduced through extensions or profiles.
+
+The Core MUST NOT depend on any particular future hardware model.
+
+
+---
+
+105. Extension Types
+
+ULABI SHALL support extension types.
+
+An extension type MUST have:
+
+TypeID
+Version
+Namespace
+Encoding
+Validation Rules
+Compatibility Rules
+Security Rules
+
+An extension MUST NOT redefine an existing Core type's meaning.
+
+
+---
+
+106. Type Namespaces
+
+Type identifiers SHOULD use namespaces.
+
+Example:
+
+org.example.types/Person
+
+Namespaces prevent accidental collisions between independently developed ecosystems.
+
+
+---
+
+107. Reserved Namespaces
+
+ULABI SHOULD reserve namespaces for:
+
+ulabi.core
+ulabi.std
+ulabi.profile
+ulabi.extension
+
+The governance specification will define allocation rules.
+
 
 ---
 
 108. Type Registry
 
-A Type Registry MAY maintain:
+ULABI SHOULD eventually provide a registry for standardized public type identifiers.
+
+The registry MAY contain:
 
 TypeID
+Owner
 Version
-Schema
+Definition
 Encoding
-Constraints
 Compatibility
-Profiles
+Status
 
-Registries MUST avoid becoming mandatory centralized infrastructure unless a separate governance specification explicitly defines such a requirement.
+The registry MUST NOT become a mandatory centralized runtime dependency.
 
-Distributed and local registries SHOULD be supported.
-
----
-
-109. Schema Independence
-
-ULABI schemas should be machine-readable.
-
-Possible future schema formats may include:
-
-ULABI Schema
-JSON representation
-CBOR representation
-Binary representation
-Human-readable specification format
-
-The choice of schema representation MUST NOT redefine the semantic type itself.
 
 ---
 
-110. Implementation Architecture
+109. Offline Operation
 
-A typical implementation may look like:
+Type resolution MUST be possible without permanent network access.
 
-                 Application
-                     |
-              Language Adapter
-                     |
-               Type Mapper
-                     |
-              ULABI Type Layer
-              /       |       \
-        Validator  Encoder  Decoder
-              \       |       /
-                Core ABI
-                     |
-             Transport / Runtime
+A conformant implementation SHOULD be capable of operating from:
+
+local metadata;
+
+embedded schemas;
+
+cached registry data;
+
+signed packages.
+
+
 
 ---
 
-111. Minimal Implementation
+110. Deterministic Type Resolution
 
-A minimal ULABI implementation should be able to support:
+Given the same valid type identifier and version, an implementation SHOULD resolve the same semantic definition.
 
-Bool
-Int
-UInt
-Float
-String
-Bytes
-Unit
-Record
-Option
-Result
+Ambiguous type resolution MUST be rejected.
 
-plus:
-
-- type identity;
-- validation;
-- canonical encoding;
-- versioning;
-- compatibility checking.
-
-This makes experimentation possible without requiring the entire ULABI ecosystem.
 
 ---
 
-112. Reference Implementation
+111. Schema
 
-The first reference implementation SHOULD prioritize correctness over maximum performance.
+A ULABI schema describes the structure and constraints of a type.
 
-It should provide:
+A schema SHOULD include:
 
-- readable code;
-- extensive tests;
-- deterministic behavior;
-- security validation;
-- canonical test vectors;
-- compatibility tests;
-- fuzz testing.
+SchemaID
+Version
+TypeDefinitions
+Constraints
+Encoding
+CompatibilityRules
 
-Optimized implementations can follow.
+Schemas MUST themselves be versioned.
 
----
-
-113. Performance
-
-The type system SHOULD support multiple implementation strategies:
-
-Canonical Copy
-Zero Copy
-Shared Memory
-Streaming
-Lazy Decode
-Incremental Decode
-
-Optimization MUST NOT change semantic behavior.
 
 ---
 
-114. Zero-Copy Safety Rule
+112. Schema Validation
 
-Zero-copy MUST never override:
+Schema validation MUST occur before unsafe use of externally supplied values.
 
-- ownership;
-- lifetime;
-- mutability;
-- synchronization;
-- authorization;
-- memory safety.
+A validator SHOULD check:
 
-If zero-copy cannot satisfy the contract safely, the implementation MUST fall back to copying or reject the operation.
+Type
+Version
+Length
+Structure
+Constraints
+Ownership
+Capabilities
+Resource Limits
 
----
-
-115. Distributed Type Semantics
-
-A type valid locally may not automatically be suitable remotely.
-
-Distributed profiles MUST consider:
-
-- serialization;
-- versioning;
-- network failure;
-- partial delivery;
-- retries;
-- idempotency;
-- authentication;
-- authorization;
-- resource limits.
-
-ULABI MUST NOT hide these differences.
 
 ---
 
-116. Remote Type Identity
+113. Schema Evolution
 
-Remote type identity MUST be stable across:
+Schemas SHOULD support additive evolution.
 
-- process restarts;
-- machines;
-- operating systems;
-- architectures;
-- compiler versions.
+Preferred evolution:
 
-Local memory addresses MUST NOT be used as remote type identities.
+Add optional field
+Add extension
+Add compatible variant
+Add metadata
 
----
+Dangerous evolution includes:
 
-117. Embedded Systems
+Change field meaning
+Change required field type
+Change numeric semantics
+Remove required field
+Change encoding
 
-The type system SHOULD support constrained systems.
+Breaking changes MUST be versioned appropriately.
 
-Implementations MAY disable:
-
-- dynamic type discovery;
-- reflection;
-- large collections;
-- dynamic allocation;
-- advanced profiles.
-
-A small embedded implementation can therefore conform to a constrained ULABI profile.
 
 ---
 
-118. Safety-Critical Systems
+114. Canonical Type Descriptor
 
-A Safety-Critical Profile SHOULD define stricter requirements for:
+ULABI SHOULD eventually define a canonical machine-readable descriptor.
 
-- deterministic behavior;
-- bounded memory;
-- bounded execution;
-- validation;
-- failure handling;
-- formal verification;
-- certification evidence.
+Conceptually:
 
-The Core remains general-purpose.
+TypeDescriptor {
+    id
+    version
+    kind
+    representation
+    constraints
+    ownership
+    lifetime
+    mutability
+    encoding
+}
 
----
+The exact representation SHALL be specified separately.
 
-119. Formal Verification
-
-Critical type operations SHOULD be suitable for formal verification.
-
-Especially:
-
-- integer encoding;
-- integer decoding;
-- bounds checking;
-- length validation;
-- canonical encoding;
-- type identity;
-- compatibility checking.
 
 ---
 
-120. Compatibility Matrix
+115. Type Fingerprints
 
-Implementations SHOULD expose a compatibility matrix.
+ULABI MAY define cryptographic type fingerprints.
+
+Conceptually:
+
+TypeFingerprint =
+    Hash(CanonicalTypeDescriptor)
+
+Fingerprints MAY be used for:
+
+compatibility checking;
+
+caching;
+
+validation;
+
+distributed negotiation;
+
+reproducibility.
+
+
+
+---
+
+116. Type Compatibility Classes
+
+ULABI SHOULD classify compatibility as:
+
+IDENTICAL
+COMPATIBLE
+CONVERTIBLE
+LOSSY
+INCOMPATIBLE
+UNKNOWN
+
+Tools SHOULD expose these classifications.
+
+
+---
+
+117. ABI Difference Detection
+
+ULABI tooling SHOULD be capable of comparing two type definitions.
 
 Example:
 
-                    Provider
-                V1       V2
-Consumer V1     ✓        ✓
-Consumer V2     ✓        ✓/conditional
-Consumer V3     ?        ?
+Type v1
+    |
+    v
+Type v2
+    |
+    v
+Compatibility Analyzer
+    |
+    +-- Compatible
+    +-- Conditionally Compatible
+    +-- Breaking
 
-Compatibility MUST be determined using the formal specification.
+The analyzer SHOULD identify:
+
+field changes;
+
+type changes;
+
+encoding changes;
+
+alignment changes;
+
+ownership changes;
+
+lifetime changes;
+
+constraint changes;
+
+semantic changes.
+
+
 
 ---
 
-121. Type Contract Template
+118. Type-Level Feature Negotiation
 
-Every future ULABI type specification SHOULD follow:
+Implementations MAY negotiate supported types.
 
-Type
-Purpose
-Semantic Definition
+Example:
+
+Provider:
+    supports String
+    supports Bytes
+    supports Tensor
+
+Consumer:
+    supports String
+    supports Bytes
+
+Negotiation:
+    String
+    Bytes
+
+Unsupported types MUST result in explicit negotiation failure or conversion.
+
+
+---
+
+119. Graceful Degradation
+
+A type extension MAY define fallback behavior.
+
+Example:
+
+Tensor
+   |
+   +-- GPU representation
+   |
+   +-- CPU representation
+   |
+   +-- Serialized representation
+
+Fallback MUST preserve semantics.
+
+Performance degradation MUST NOT silently become semantic degradation.
+
+
+---
+
+120. Type Marshalling
+
+A ULABI adapter is responsible for converting language-native values into ULABI boundary values.
+
+Conceptually:
+
+Native Value
+     |
+     v
+Marshaller
+     |
+     v
+ULABI Value
+     |
+     v
+Boundary
+
+The adapter MUST preserve semantic meaning.
+
+
+---
+
+121. Unmarshalling
+
+The reverse process is:
+
+Boundary Value
+     |
+     v
+Validator
+     |
+     v
+Unmarshaller
+     |
+     v
+Native Value
+
+The destination language MAY choose its own internal representation.
+
+
+---
+
+122. Marshalling Failure
+
+Marshalling MUST fail explicitly if:
+
+the value cannot be represented;
+
+a constraint is violated;
+
+ownership cannot be transferred;
+
+lifetime cannot be guaranteed;
+
+required capabilities are absent;
+
+conversion would be unsafe.
+
+
+
+---
+
+123. No Silent Semantic Conversion
+
+ULABI MUST NOT silently perform semantic transformations.
+
+For example:
+
+meters -> feet
+UTC -> local time
+USD -> EUR
+UTF-8 -> lossy text
+
+must be explicit conversions.
+
+
+---
+
+124. Type Metadata and Effects
+
+Type contracts MAY interact with function effects.
+
+For example:
+
+Function:
+    read_buffer(Buffer)
+
+may declare:
+
+ReadsMemory
+
+while:
+
+Function:
+    mutate_buffer(Buffer)
+
+may declare:
+
+WritesMemory
+
+The effect system is specified separately.
+
+
+---
+
+125. Type Metadata and Security
+
+Type descriptors MAY declare security requirements.
+
+Examples:
+
+RequiresCapability(DeviceAccess)
+RequiresEncryption
+Sensitive
+Confidential
+IntegrityProtected
+NonExportable
+
+Security semantics belong to the security profiles.
+
+
+---
+
+126. Sensitive Types
+
+A type MAY be marked sensitive.
+
+Examples:
+
+SecretKey
+Credential
+AuthenticationToken
+PrivateData
+
+Sensitive values SHOULD NOT appear in:
+
+ordinary logs;
+
+debugging output;
+
+crash reports;
+
+telemetry;
+
+unprotected traces.
+
+
+
+---
+
+127. Secret Memory
+
+Sensitive types SHOULD use memory protections appropriate to the platform.
+
+Possible protections include:
+
+restricted access;
+
+explicit zeroization;
+
+non-swappable memory;
+
+hardware-backed storage.
+
+
+These belong to applicable security profiles.
+
+
+---
+
+128. Deterministic Representation
+
+For types requiring canonical representation:
+
+Same Semantic Value
+        |
+        v
+Same Canonical Representation
+
+This is required for reproducibility and cryptographic operations.
+
+
+---
+
+129. Cryptographic Representation
+
+When a type participates in signatures or hashes, its canonical representation MUST be unambiguous.
+
+No implementation-specific memory layout may be hashed as a universal representation unless explicitly specified.
+
+
+---
+
+130. Type Serialization Security
+
+Serialization MUST defend against:
+
+duplicate fields;
+
+ambiguous encodings;
+
+integer overflow;
+
+invalid lengths;
+
+invalid discriminants;
+
+recursive bombs;
+
+type confusion.
+
+
+
+---
+
+131. Parser Differential Protection
+
+Different implementations MUST interpret canonical ULABI representations consistently.
+
+The conformance suite SHOULD include differential tests across independent implementations.
+
+
+---
+
+132. Fuzz Testing
+
+Every Core type parser SHOULD eventually have fuzz tests covering:
+
+valid inputs;
+
+invalid inputs;
+
+boundary values;
+
+maximum values;
+
+malformed encodings;
+
+random data;
+
+nested structures.
+
+
+
+---
+
+133. Property Testing
+
+Type implementations SHOULD use property-based tests.
+
+Examples:
+
+encode(decode(x)) == canonical(x)
+
+and:
+
+decode(encode(x)) == x
+
+where applicable.
+
+
+---
+
+134. Round-Trip Requirement
+
+For types with reversible canonical encoding:
+
+Value
+  |
+Encode
+  |
+Bytes
+  |
+Decode
+  |
+Value'
+
+The semantic value of Value' MUST equal the semantic value of Value.
+
+
+---
+
+135. Cross-Language Conformance
+
+The conformance suite MUST eventually test:
+
+Language A
+    |
+    v
+ULABI
+    |
+    v
+Language B
+
+and:
+
+Language B
+    |
+    v
+ULABI
+    |
+    v
+Language A
+
+The same semantic result MUST be obtained in both directions where the contract requires symmetry.
+
+
+---
+
+136. Reference Test Vectors
+
+Every Core type SHOULD eventually have canonical test vectors.
+
+Example:
+
+Type:
+    U32
+
+Value:
+    42
+
+Canonical Encoding:
+    <defined by encoding specification>
+
+Test vectors MUST be stable across implementations.
+
+
+---
+
+137. Conformance Levels
+
+Type support SHOULD eventually be divided into levels.
+
+Level 0 — Metadata
+
+Implementation can identify ULABI types.
+
+Level 1 — Core Scalars
+
+Implementation supports:
+
+Bool
+I8..I128
+U8..U128
+F32
+F64
+Byte
+Char
+Unit
+
+Level 2 — Core Structures
+
+Implementation supports:
+
+Array
+Record
+Enum
+Variant
+Option
+Result
+
+Level 3 — Resource Types
+
+Implementation supports:
+
+Handle
+Capability
+Buffer
+Resource
+
+Level 4 — Advanced Types
+
+Implementation supports applicable profiles:
+
+Stream
+Future
+Tensor
+Timestamp
+Duration
+Decimal
+BigInt
+
+
+---
+
+138. Mandatory Core Types
+
+The initial mandatory Core type set SHOULD be:
+
+Bool
+
+I8
+I16
+I32
+I64
+I128
+
+U8
+U16
+U32
+U64
+U128
+
+F32
+F64
+
+Byte
+Char
+Unit
+
+String
+Bytes
+
+Array
+Record
+Enum
+Variant
+Option
+Result
+
+Handle
+
+The final normative Core set SHALL be frozen before ULABI 1.0.
+
+
+---
+
+139. Optional Profiles
+
+The following types SHOULD be profile-based:
+
+Map
+Set
+Tuple
+BigInt
+Decimal
+Timestamp
+Duration
+Quantity
+Stream
+Future
+Tensor
+Matrix
+DeviceBuffer
+DistributedReference
+QuantumState
+
+
+---
+
+140. Implementation Rule
+
+An implementation MUST NOT claim full ULABI type conformance merely because it can map a subset of types.
+
+It MUST declare its supported type/profile set.
+
+Example:
+
+ULABI Core:
+    Supported
+
+ULABI Collections:
+    Partial
+
+ULABI Async:
+    Supported
+
+ULABI Tensor:
+    Unsupported
+
+
+---
+
+141. Compatibility Declaration
+
+Implementations SHOULD expose machine-readable compatibility metadata.
+
+Conceptually:
+
+TypeCapabilities {
+    supported_types
+    supported_versions
+    supported_profiles
+    conversion_rules
+    limits
+}
+
+
+---
+
+142. Resource Limits
+
+Every implementation MUST define operational limits.
+
+Examples:
+
+max_string_bytes
+max_bytes
+max_array_length
+max_record_depth
+max_variant_depth
+max_tensor_elements
+max_type_nesting
+
+An implementation MAY choose stricter limits than the protocol maximum.
+
+
+---
+
+143. Failure Semantics
+
+Type operations MUST use explicit failure semantics.
+
+Examples:
+
+InvalidEncoding
+InvalidType
+UnsupportedType
+UnsupportedVersion
+ConstraintViolation
+Overflow
+Underflow
+OutOfBounds
+ResourceLimitExceeded
+OwnershipViolation
+LifetimeViolation
+CapabilityDenied
+
+
+---
+
+144. No Undefined ABI Behavior
+
+ULABI MUST avoid undefined behavior at the interoperability boundary.
+
+If behavior cannot be universally defined, it MUST be:
+
+explicitly constrained;
+
+moved into a profile;
+
+marked implementation-defined;
+
+or rejected.
+
+
+
+---
+
+145. Implementation-Defined Behavior
+
+Implementation-defined behavior MAY exist where necessary.
+
+However, it MUST be:
+
+1. Documented.
+
+
+2. Machine-readable where possible.
+
+
+3. Discoverable.
+
+
+4. Versioned.
+
+
+5. Testable.
+
+
+
+
+---
+
+146. Profile Interaction
+
+A type MAY participate in multiple profiles.
+
+For example:
+
+Buffer
+   |
+   +-- Memory Profile
+   +-- Security Profile
+   +-- Streaming Profile
+   +-- Distributed Profile
+   +-- Hardware Profile
+
+The intersection of profile requirements MUST be explicit.
+
+
+---
+
+147. Self-Healing Interaction
+
+The ULABI self-healing profile MAY use type metadata to diagnose failures.
+
+For example:
+
+Type violation
+      |
+      v
+Detect
+      |
+      v
+Diagnose
+      |
+      v
+Known recovery policy?
+   /           \
+ YES            NO
+ |              |
+Recover        Escalate
+ |
+Verify
+ |
+Healthy?
+ /     \
+YES     NO
+ |       |
+Done   Rollback
+
+Self-healing MUST NOT arbitrarily modify a type definition or ABI contract.
+
+Recovery MUST operate within explicitly authorized policies.
+
+
+---
+
+148. Type Contract Immutability
+
+Once a ULABI type version is published as stable, its semantic meaning MUST NOT silently change.
+
+A breaking semantic change requires a new version or type identity.
+
+
+---
+
+149. Governance
+
+Changes to standardized Core types MUST be governed through the ULABI governance process.
+
+No individual implementation may unilaterally redefine:
+
+Bool
+I32
+String
+Bytes
+Option
+Result
+Handle
+
+or any other standardized Core type.
+
+
+---
+
+150. Version Status
+
+Types SHOULD have lifecycle states:
+
+Experimental
+Draft
+Stable
+Deprecated
+Retired
+
+A retired type MUST remain documented for historical compatibility where required.
+
+
+---
+
+151. Deprecation
+
+Deprecation MUST provide:
+
+replacement type;
+
+migration guidance;
+
+compatibility period;
+
+conformance status.
+
+
+A deprecated type SHOULD NOT be removed immediately from implementations.
+
+
+---
+
+152. Formal Verification
+
+Critical type implementations SHOULD be suitable for formal verification.
+
+Particularly important areas include:
+
+integer encoding;
+
+length validation;
+
+bounds checking;
+
+canonical encoding;
+
+type discrimination;
+
+ownership metadata;
+
+resource limits.
+
+
+
+---
+
+153. Reference Implementation
+
+ULABI SHOULD eventually provide a small reference implementation of the type system.
+
+The reference implementation SHOULD prioritize:
+
+correctness;
+
+clarity;
+
+determinism;
+
+testability;
+
+portability.
+
+
+It SHOULD NOT be treated as the definition of ULABI.
+
+The specification remains authoritative.
+
+
+---
+
+154. Multiple Implementations
+
+ULABI MUST encourage multiple independent implementations.
+
+At minimum, the conformance ecosystem SHOULD eventually include implementations written in more than one programming language.
+
+This prevents accidental coupling between:
+
+ULABI Specification
+
+and:
+
+One Implementation
+
+
+---
+
+155. Integration With Core ABI
+
+docs/abi/core-abi.md depends on this document for:
+
+primitive types;
+
+composite types;
+
+handles;
+
+boundary representations;
+
+type identity;
+
+compatibility semantics.
+
+
+The Core ABI document defines how these types participate in ABI calls.
+
+This document defines what those types mean.
+
+
+---
+
+156. Integration With Calling Convention
+
+docs/abi/calling-convention.md SHALL define how types are physically passed.
+
+For example:
+
+ULABI Type
+    |
+    v
+Logical Argument
+    |
+    v
+Calling Convention
+    |
+    +-- Register
+    +-- Stack
+    +-- Reference
+    +-- Descriptor
+
+This document MUST NOT define architecture-specific register allocation.
+
+
+---
+
+157. Integration With Memory Model
+
+docs/abi/memory-model.md SHALL define:
+
+ownership;
+
+borrowing;
+
+allocation;
+
+lifetime;
+
+sharing;
+
+release;
+
+pointer safety;
+
+zero-copy.
+
+
+This document defines the type metadata that the memory model operates upon.
+
+
+---
+
+158. Integration With Stack Model
+
+docs/abi/stack-model.md SHALL define how stack-resident ABI values are represented.
+
+This document supplies the type size, alignment, and layout semantics required by that document.
+
+
+---
+
+159. Integration With Register Model
+
+docs/abi/register-model.md SHALL define how logical ULABI values map to machine registers.
+
+This document defines the semantic types.
+
+The register model defines physical representation.
+
+
+---
+
+160. Integration With Return Values
+
+docs/abi/return-values.md SHALL define how:
+
+Result<T,E>
+Option<T>
+Unit
+
+and other return types cross function boundaries.
+
+
+---
+
+161. Integration With Error Model
+
+docs/abi/exception-model.md SHALL define how ULABI errors are transported.
+
+This document provides the semantic Error and Result types.
+
+
+---
+
+162. Integration With Interoperability
+
+docs/interoperability/language-interoperability.md SHALL define how language-native types map into ULABI types.
+
+The mapping MUST be explicit.
+
+Example:
+
+Rust String
+     |
+     v
+ULABI String
+     |
+     v
+Python str
+
+or:
+
+C struct
+     |
+     v
+ULABI Record
+     |
+     v
+Zamani record
+
+No language is privileged.
+
+
+---
+
+163. Integration With FFI
+
+docs/interoperability/foreign-function-interface.md SHALL define how foreign functions expose ULABI-compatible types.
+
+The FFI layer MUST use the type contracts defined here.
+
+
+---
+
+164. Integration With Serialization
+
+docs/distributed/serialization.md SHALL use these type definitions when values cross process or machine boundaries.
+
+Serialization MUST NOT redefine semantic types.
+
+
+---
+
+165. Integration With Security
+
+docs/security/security-model.md SHALL use type metadata for:
+
+sensitive values;
+
+capabilities;
+
+handles;
+
+resource boundaries;
+
+validation;
+
+authority.
+
+
+
+---
+
+166. Integration With Self-Healing
+
+docs/reliability/self-healing.md SHALL treat type violations as observable failures.
+
+It MUST NOT automatically modify type contracts.
+
+Recovery MAY include:
+
+retry;
+
+fallback representation;
+
+alternate implementation;
+
+rollback;
+
+escalation.
+
+
+
+---
+
+167. Integration With Compatibility
+
+docs/compatibility/feature-negotiation.md SHALL use type capabilities to negotiate supported types.
+
+Example:
+
+Provider:
+    String
+    Bytes
+    Tensor
+
+Consumer:
+    String
+    Bytes
+
+Intersection:
+    String
+    Bytes
+
+
+---
+
+168. Integration With Conformance
+
+docs/standards/conformance.md SHALL define how implementations prove support for these types.
+
+Each type SHOULD have:
+
+positive tests;
+
+negative tests;
+
+boundary tests;
+
+encoding tests;
+
+compatibility tests;
+
+fuzz tests.
+
+
+
+---
+
+169. Integration With Test Suite
+
+docs/standards/test-suite.md SHALL provide test vectors for every standardized type.
+
+The test suite MUST test independent implementations against the same vectors.
+
+
+---
+
+170. Integration With Certification
+
+Certification SHOULD verify:
+
 Type Identity
+Type Encoding
+Type Validation
+Type Compatibility
+Type Limits
+Type Security
+Type Evolution
+
+Certification MUST test actual behavior rather than documentation claims.
+
+
+---
+
+171. File Ownership
+
+The following files own different concerns:
+
+ULABI-DESIGN.md
+    Overall architecture
+
+ULABI-SPEC.md
+    System-wide normative rules
+
+docs/abi/core-abi.md
+    Core ABI contract
+
+docs/abi/data-types.md
+    Universal type semantics
+
+docs/abi/calling-convention.md
+    Argument/result physical mapping
+
+docs/abi/memory-model.md
+    Ownership/lifetime/memory
+
+docs/abi/stack-model.md
+    Stack representation
+
+docs/abi/register-model.md
+    Register mapping
+
+docs/abi/exception-model.md
+    Error/exception transport
+
+docs/abi/return-values.md
+    Return-value ABI
+
+docs/type-system/*
+    Advanced type-system semantics
+
+docs/interoperability/*
+    Language adaptation
+
+docs/distributed/serialization.md
+    Distributed representation
+
+docs/security/*
+    Security semantics
+
+docs/compatibility/*
+    Version and negotiation semantics
+
+docs/standards/*
+    Conformance and certification
+
+Each file MUST have a single primary responsibility.
+
+
+---
+
+172. Implementation Order
+
+The implementation SHOULD proceed in dependency order.
+
+Phase 1 — Independent Foundations
+
+Implement and stabilize:
+
+schemas/type-descriptor
+schemas/type-id
+schemas/version
+schemas/constraints
+
+These should have minimal dependencies.
+
+
+---
+
+Phase 2 — Core Scalar Types
+
+Implement:
+
+Bool
+I8
+I16
+I32
+I64
+I128
+U8
+U16
+U32
+U64
+U128
+F32
+F64
+Byte
+Char
+Unit
+
+These should be independently testable.
+
+
+---
+
+Phase 3 — Core Boundary Types
+
+Implement:
+
+String
+Bytes
+Array
+Record
+Enum
+Variant
+Option
+Result
+
+These depend on the scalar type layer.
+
+
+---
+
+Phase 4 — Identity and Metadata
+
+Implement:
+
+TypeID
+TypeDescriptor
+SchemaID
 Version
-Canonical Representation
-Encoding
-Decoding
-Validation
-Constraints
-Ownership
-Lifetime
-Mutability
-Error Behavior
-Security Requirements
-Compatibility
-Extension Points
-Conformance Tests
-Reference Implementation
+TypeFingerprint
 
-This becomes the standard design template for future ULABI types.
+These integrate the type system with the ABI identity system.
+
 
 ---
 
-122. Conformance Statement
+Phase 5 — Resource Types
 
-A conforming implementation MUST NOT claim:
+Implement:
 
-«"ULABI compatible"»
+Handle
+Capability
+BufferDescriptor
+Resource
 
-without identifying which ULABI type levels and profiles it implements.
+These depend on:
 
-A proper declaration SHOULD look like:
+Type metadata
+Memory model
+Security model
 
-ULABI Implementation Profile
-
-Core Types       ✓
-Structural Types ✓
-Result Types     ✓
-Resource Types   -
-Streaming        ✓
-Security         ✓
-Distributed      -
-Tensor           -
-
-This prevents vague compatibility claims.
 
 ---
 
-123. Final Architectural Rule
+Phase 6 — ABI Integration
 
-The ULABI Universal Type System exists to establish a common semantic boundary while preserving implementation freedom.
+Integrate with:
 
-The fundamental model is:
+core-abi.md
+calling-convention.md
+return-values.md
+exception-model.md
+memory-model.md
 
-+------------------+
-| Programming      |
-| Language A       |
-+------------------+
-         |
-         v
-+------------------+
-| ULABI Type       |
-| Contract         |
-+------------------+
-         |
-         v
-+------------------+
-| Programming      |
-| Language B       |
-+------------------+
-
-Not:
-
-Language A
-    |
-    v
-Language B
-
-and not:
-
-Language A
-    |
-    v
-Universal Language
-
-but:
-
-Language A
-    |
-    v
-  ULABI
-    ^
-    |
-Language B
 
 ---
 
-124. Summary
+Phase 7 — Language Adapters
 
-ULABI's type system provides a universal semantic vocabulary for interoperability without forcing programming languages to become identical.
+Create independent adapters.
 
-It defines:
+For example:
 
-- primitive types;
-- structural types;
-- algebraic types;
-- resource types;
-- semantic types;
-- type identity;
-- canonical representations;
-- validation;
-- compatibility;
-- ownership metadata;
-- lifetime metadata;
-- mutability;
-- resource limits;
-- safe conversion;
-- streaming;
-- zero-copy boundaries;
-- distributed type semantics;
-- security requirements;
-- conformance requirements.
+C Adapter
+Rust Adapter
+Go Adapter
+Python Adapter
+Java Adapter
+Zamani Adapter
+Sankofa Adapter
 
-The central principle remains:
+No adapter becomes part of the ULABI specification itself.
 
-«ULABI defines what data means at the interoperability boundary; each language remains free to decide how that data is represented internally.»
 
-Zamani remains Zamani.
+---
 
-Sankofa remains Sankofa.
+Phase 8 — Advanced Profiles
 
-C remains C.
+Only after the Core is stable:
 
-Rust remains Rust.
+Async
+Streaming
+Tensor
+Distributed
+Hardware
+Security
+Real-Time
+Self-Healing
 
-Python remains Python.
 
-Every future programming language remains independent.
+---
 
-ULABI is the common contract between them.
+173. Files Required for This Component
+
+The following files are directly involved with the ULABI type system.
+
+Primary specification
+
+docs/abi/data-types.md
+
+This file defines the universal type contract.
+
+
+---
+
+Supporting schemas
+
+schemas/type-id.schema
+schemas/type-descriptor.schema
+schemas/type-constraints.schema
+schemas/type-capabilities.schema
+
+These define machine-readable metadata.
+
+
+---
+
+Test vectors
+
+tests/types/
+
+This directory contains:
+
+primitive/
+strings/
+bytes/
+arrays/
+records/
+enums/
+variants/
+option/
+result/
+handles/
+
+
+---
+
+Conformance tests
+
+conformance/types/
+
+These verify that implementations conform to the type specification.
+
+
+---
+
+Examples
+
+examples/types/
+
+Examples MUST demonstrate:
+
+primitive values;
+
+structures;
+
+optional values;
+
+results;
+
+handles;
+
+cross-language mappings.
+
+
+
+---
+
+174. File Completion Rule
+
+Once docs/abi/data-types.md is approved, later files MUST reference it rather than redefining its type semantics.
+
+For example:
+
+calling-convention.md MUST say how String is passed.
+
+It MUST NOT redefine what a String means.
+
+Similarly:
+
+memory-model.md MUST define ownership of Buffer.
+
+It MUST NOT redefine Buffer itself.
+
+This prevents repeated editing and architectural drift.
+
+
+---
+
+175. No Circular Specification Dependencies
+
+The dependency direction SHOULD be:
+
+Type Identity
+      |
+      v
+Primitive Types
+      |
+      v
+Composite Types
+      |
+      v
+Type Metadata
+      |
+      v
+Memory / Ownership
+      |
+      v
+Calling Convention
+      |
+      v
+Runtime / Language Adapters
+      |
+      v
+Distributed / Advanced Profiles
+
+Higher layers MUST NOT redefine lower-layer semantics.
+
+
+---
+
+176. Definition of Done
+
+This document is considered complete for the current design phase when:
+
+all Core types are identified;
+
+semantic meanings are defined;
+
+type identity is defined;
+
+type metadata is defined;
+
+ownership interaction is defined;
+
+lifetime interaction is defined;
+
+mutability is defined;
+
+nullability is defined;
+
+encoding requirements are defined;
+
+compatibility rules are defined;
+
+resource limits are defined;
+
+security requirements are defined;
+
+extension rules are defined;
+
+integration points are documented;
+
+implementation order is documented;
+
+conformance requirements are documented.
+
+
+Implementation-specific binary encodings MAY remain provisional until the canonical encoding specification is finalized.
+
+
+---
+
+177. Design Freeze Rule
+
+Before ULABI 1.0:
+
+1. Core type names MUST be frozen.
+
+
+2. Core semantic meanings MUST be frozen.
+
+
+3. Core encodings MUST be frozen.
+
+
+4. Type identity rules MUST be frozen.
+
+
+5. Compatibility rules MUST be frozen.
+
+
+6. Security requirements MUST be frozen.
+
+
+7. Conformance tests MUST be published.
+
+
+8. Reference test vectors MUST be published.
+
+
+
+After ULABI 1.0, breaking changes require a new major version.
+
+
+---
+
+178. Final Architectural Rule
+
+The ULABI type system exists to create interoperability without forcing uniformity.
+
+The rule is:
+
+> Same semantic contract, not necessarily the same implementation.
+
+
+
+Therefore:
+
+C
+C++
+Rust
+Go
+Python
+Java
+Swift
+Kotlin
+Fortran
+Ada
+Zamani
+Sankofa
+Future Languages
+        |
+        v
+      ULABI
+        |
+        v
+Universal Semantic Boundary
+
+ULABI does not replace the type systems of these languages.
+
+It provides the common contract through which they can communicate.
+
+
+---
+
+179. Final Principle
+
+The ultimate objective is:
+
+Any Language
+     |
+     v
+ULABI Adapter
+     |
+     v
+Universal Type Contract
+     |
+     v
+ULABI Adapter
+     |
+     v
+Any Other Language
+
+without requiring:
+
+Language A == Language B
+
+without requiring:
+
+Runtime A == Runtime B
+
+without requiring:
+
+Compiler A == Compiler B
+
+without requiring:
+
+OS A == OS B
+
+without requiring:
+
+CPU A == CPU B
+
+and without making:
+
+Zamani == Sankofa
+
+or either language the foundation of ULABI.
+
+ULABI remains the independent universal interoperability contract.
+
+### File order from here
+
+With this fifth document in place, the clean implementation/documentation order is:
+
+1. `ULABI-DESIGN.md` — architecture
+2. `ULABI-SPEC.md` — normative system rules
+3. `docs/abi/core-abi.md` — core ABI contract
+4. `docs/abi/calling-convention.md` — physical/logical call mapping
+5. **`docs/abi/data-types.md` — this document**
+6. `docs/abi/memory-model.md`
+7. `docs/abi/stack-model.md`
+8. `docs/abi/register-model.md`
+9. `docs/abi/exception-model.md`
+10. `docs/abi/return-values.md`
+
+The important architectural decision is that **Document 5 defines the meaning and contracts of types; later documents consume those definitions rather than redefining them**. That is what lets us work on one file to completion without having to rewrite it whenever another component is added.
