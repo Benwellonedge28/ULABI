@@ -1,8 +1,4 @@
-I checked Benwellonedge28/ULABI first. The repository currently contains ULABI-DESIGN.md, but it is still only a placeholder rather than the full architecture document we drafted.
-
-So Design Document 2 should be ULABI-SPEC.md. It should turn the architecture into normative rules that implementations can actually conform to.
-
-Copy and paste the following as ULABI-SPEC.md:
+#ULABI-SPEC.md:
 
 # ULABI — Universal Language Application Binary Interface
 # Normative Specification
