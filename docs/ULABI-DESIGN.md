@@ -1,3 +1,7 @@
+Absolutely. Below is a complete replacement for docs/ULABI-DESIGN.md. It incorporates the existing design plus the new universal-scaling, interoperability, security, verification, governance, and self-healing architecture we discussed.
+
+You can copy everything inside the code block directly into docs/ULABI-DESIGN.md.
+
 # ULABI Design Document
 
 ## Universal Language Application Binary Interface
@@ -5,8 +9,8 @@
 **Project:** ULABI  
 **Full Name:** Universal Language Application Binary Interface  
 **Repository:** `Benwellonedge28/ULABI`  
-**Status:** Architecture / Design Draft  
-**Specification Version:** 0.1.0-draft  
+**Status:** Architecture / Design Specification  
+**Specification Version:** 0.2.0-draft  
 **Implementation Status:** Pre-implementation  
 **License:** Apache-2.0  
 
@@ -14,19 +18,21 @@
 
 # 1. Executive Summary
 
-ULABI is an open, language-neutral interoperability standard intended to allow independently developed programming languages, compilers, runtimes, libraries, applications, operating systems, devices, and distributed systems to communicate through stable, secure, versioned interfaces.
+ULABI is an open, language-neutral interoperability standard designed to allow independently developed programming languages, compilers, runtimes, libraries, applications, operating systems, devices, accelerators, and distributed systems to communicate through stable, secure, versioned interfaces.
 
-ULABI is designed to become a universal interoperability layer.
+ULABI is intended to become a universal interoperability layer.
 
-Its purpose is not to replace programming languages.
+ULABI does not replace programming languages.
 
-Its purpose is not to force all languages to use the same runtime.
+ULABI does not define a universal programming language.
 
-Its purpose is not to make every language behave identically.
+ULABI does not require all languages to share one runtime.
+
+ULABI does not require all systems to use one operating system, processor architecture, memory-management model, compiler, or vendor.
 
 Instead:
 
-> ULABI standardizes the boundary between systems while allowing the systems themselves to remain independent.
+> ULABI standardizes the boundary between independently developed systems while preserving their internal independence.
 
 A component implemented in one programming language should be able to communicate with a component implemented in another language without requiring both systems to share:
 
@@ -38,6 +44,8 @@ A component implemented in one programming language should be able to communicat
 - CPU architecture;
 - vendor;
 - implementation strategy.
+
+ULABI should support interoperability between current and future programming languages without requiring ULABI itself to become a programming language.
 
 ---
 
@@ -74,6 +82,9 @@ Rust     != ULABI
 Python   != ULABI
 Go       != ULABI
 Java     != ULABI
+C#       != ULABI
+Swift    != ULABI
+Kotlin   != ULABI
 Zamani   != ULABI
 Sankofa  != ULABI
 
@@ -87,35 +98,53 @@ ULABI is the interoperability contract.
 The long-term vision is:
 
 ULABI
-                      |
-        +-------------+-------------+
-        |             |             |
-    Languages      Runtimes      Libraries
-        |             |             |
-        +-------------+-------------+
-                      |
-                Applications
-                      |
-        +-------------+-------------+
-        |             |             |
-     Local        Distributed     Embedded
-        |             |             |
-        +-------------+-------------+
-                      |
-                 Operating Systems
-                      |
-                 CPU Architectures
-                      |
-               Hardware / Devices
+                           |
+        +------------------+------------------+
+        |                  |                  |
+    Languages          Runtimes          Libraries
+        |                  |                  |
+        +------------------+------------------+
+                           |
+                     Applications
+                           |
+        +------------------+------------------+
+        |                  |                  |
+      Local           Distributed         Embedded
+        |                  |                  |
+        +------------------+------------------+
+                           |
+                   Operating Systems
+                           |
+                    CPU Architectures
+                           |
+                  Hardware / Devices
 
-ULABI should allow systems at these different levels to interoperate without requiring a common implementation.
+ULABI should allow systems at different levels of the computing stack to interoperate without requiring a common implementation.
+
+The long-term objective is an open interoperability ecosystem in which:
+
+Language
+   |
+Compiler
+   |
+Runtime
+   |
+Library
+   |
+Application
+   |
+Operating System
+   |
+Hardware
+
+can communicate through stable contracts.
 
 
 ---
 
-4. Goals
+4. Core Objectives
 
-ULABI's primary goals are:
+ULABI's primary objectives are:
 
 1. Universal language interoperability.
 
@@ -123,64 +152,136 @@ ULABI's primary goals are:
 2. Stable binary interfaces.
 
 
-3. Language-neutral type representation.
+3. Language-neutral semantic types.
 
 
-4. Safe memory and resource interoperability.
+4. Safe memory interoperability.
 
 
-5. Cross-platform compatibility.
+5. Safe resource interoperability.
 
 
-6. Cross-architecture compatibility.
+6. Cross-platform compatibility.
 
 
-7. Explicit versioning.
+7. Cross-architecture compatibility.
 
 
-8. Strong backward compatibility.
+8. Explicit versioning.
 
 
-9. Capability-based security.
+9. Strong backward compatibility.
 
 
-10. Process and sandbox isolation.
+10. Semantic compatibility.
 
 
-11. Deterministic canonical encoding.
+11. Capability-based security.
 
 
-12. Zero-copy interoperability where safe.
+12. Process and sandbox isolation.
 
 
-13. Streaming of large data.
+13. Deterministic canonical encoding.
 
 
-14. Local and distributed interoperability.
+14. Zero-copy interoperability where safe.
 
 
-15. Hardware and accelerator interoperability.
+15. Streaming of large data.
 
 
-16. Conformance testing.
+16. Local interoperability.
 
 
-17. Fuzz testing.
+17. Process interoperability.
 
 
-18. Formal verification of critical components.
+18. Distributed interoperability.
 
 
-19. Open-source implementation.
+19. Hardware and accelerator interoperability.
 
 
-20. Vendor neutrality.
+20. Embedded interoperability.
 
 
-21. Long-term extensibility.
+21. Real-time interoperability.
 
 
-22. Minimal and stable core.
+22. ABI negotiation.
+
+
+23. ABI discovery.
+
+
+24. Interface identity.
+
+
+25. Schema registries.
+
+
+26. Compatibility verification.
+
+
+27. Automated ABI-difference analysis.
+
+
+28. Cross-language debugging.
+
+
+29. Observability.
+
+
+30. Fault containment.
+
+
+31. Self-healing capabilities.
+
+
+32. Failure-oriented design.
+
+
+33. Conformance testing.
+
+
+34. Fuzz testing.
+
+
+35. Chaos testing.
+
+
+36. Formal verification of critical components.
+
+
+37. Security verification.
+
+
+38. Safety-critical profiles.
+
+
+39. Cryptographic agility.
+
+
+40. Post-quantum readiness.
+
+
+41. Open-source implementation.
+
+
+42. Vendor neutrality.
+
+
+43. Transparent governance.
+
+
+44. Long-term compatibility.
+
+
+45. Long-term extensibility.
+
+
+46. Minimal and stable Core.
 
 
 
@@ -203,15 +304,19 @@ a package manager;
 
 a cloud platform;
 
-a networking protocol by itself;
-
-a replacement for every existing ABI;
-
 a replacement for C;
+
+a replacement for Rust;
 
 a replacement for WebAssembly;
 
-a replacement for existing serialization systems.
+a replacement for existing serialization systems;
+
+a replacement for every existing ABI;
+
+a mandatory networking protocol;
+
+a mandatory distributed-computing platform.
 
 
 ULABI may interoperate with these technologies.
@@ -229,7 +334,7 @@ No programming language owns ULABI.
 
 6.2 Runtime Neutrality
 
-ULABI must not require a particular runtime architecture.
+ULABI must not require one runtime architecture.
 
 6.3 Platform Neutrality
 
@@ -237,15 +342,15 @@ ULABI should support different operating systems.
 
 6.4 Architecture Neutrality
 
-ULABI should support different CPU architectures.
+ULABI should support multiple CPU architectures.
 
 6.5 Vendor Neutrality
 
-ULABI must not depend on a single company.
+ULABI must not depend on one company.
 
 6.6 Open Specification
 
-The specification should be publicly available.
+The specification should remain publicly available.
 
 6.7 Stable Core
 
@@ -261,11 +366,11 @@ Important behavior must be explicitly specified.
 
 6.10 Secure Defaults
 
-Unsafe behavior should never be the implicit default.
+Unsafe behavior must never be the implicit default.
 
 6.11 Failure-Oriented Design
 
-Failures must be explicit and safely contained.
+Failures must be expected, explicit, contained, and testable.
 
 6.12 Determinism
 
@@ -279,163 +384,295 @@ Backward compatibility should be treated as a fundamental requirement.
 
 Multiple independent implementations should be possible.
 
+6.15 Capability Limitation
 
----
+Components should receive only the capabilities they require.
 
-7. Architecture Overview
+6.16 Recoverability
 
-ULABI uses a layered architecture.
+Where recovery is safe and explicitly authorized, systems should be capable of recovering from failures.
 
-+----------------------------------------------------------+
-|                  Applications                            |
-+----------------------------------------------------------+
-|              Language Bindings / Adapters                |
-+----------------------------------------------------------+
-|                 ULABI Interface Layer                    |
-+----------------------------------------------------------+
-|                    Extension Layer                       |
-|  Async | Streams | Security | Distributed | Hardware   |
-+----------------------------------------------------------+
-|                     ULABI Core                           |
-| Types | Encoding | Calls | Errors | Versioning          |
-+----------------------------------------------------------+
-|              Transport / Execution Layer                 |
-+----------------------------------------------------------+
-| OS / Runtime / CPU / Hardware                            |
-+----------------------------------------------------------+
+6.17 No Hidden Magic
+
+ULABI must not silently change semantics merely to make two systems appear compatible.
 
 
 ---
 
-8. Core vs Extensions
+7. Architectural Philosophy
 
-ULABI must avoid making the Core ABI unnecessarily large.
+ULABI follows:
 
-Core
+> Minimal Core + Standard Profiles + Extensible Ecosystem.
+
+
+
+The Core should contain only semantics that are fundamental to interoperability.
+
+Advanced capabilities should exist as profiles.
+
+ULABI
+                           |
+                     Semantic Core
+                           |
+       +-------------------+-------------------+
+       |                   |                   |
+   Type System         Call Model         Error Model
+       |                   |                   |
+       +-------------------+-------------------+
+                           |
+                    Extension Profiles
+                           |
+     +---------+---------+---------+---------+
+     |         |         |         |         |
+ Security  Streaming  Distributed  Hardware  Recovery
+     |         |         |         |         |
+     +---------+---------+---------+---------+
+                           |
+                     Implementations
+
+
+---
+
+8. Layered Architecture
+
++-----------------------------------------------------------+
+|                     Applications                          |
++-----------------------------------------------------------+
+|              Language Bindings / Adapters                 |
++-----------------------------------------------------------+
+|              ULABI Interface / Contract Layer             |
++-----------------------------------------------------------+
+|                  Extension Profiles                       |
+| Security | Async | Streams | Distributed | Recovery      |
++-----------------------------------------------------------+
+|                     ULABI Core                            |
+| Types | Calls | Encoding | Errors | Identity | Versioning|
++-----------------------------------------------------------+
+|              Transport / Execution Layer                  |
++-----------------------------------------------------------+
+| OS / Runtime / CPU / Hardware                             |
++-----------------------------------------------------------+
+
+
+---
+
+9. ULABI Core
 
 The Core should eventually define:
 
-identifiers;
+stable identifiers;
+
+interface identities;
 
 primitive types;
 
 structured types;
 
+semantic types;
+
 canonical encoding;
 
-decoding;
+decoding rules;
 
 function contracts;
 
 errors;
 
-compatibility;
+compatibility rules;
 
-validation.
+validation;
+
+versioning fundamentals;
+
+ownership boundary semantics;
+
+capability declarations;
+
+deterministic behavior requirements.
 
 
-Extensions
+The Core must remain intentionally small.
 
-Possible extensions include:
 
-resources;
+---
 
-ownership;
+10. ULABI Extension Profiles
 
-async;
+Possible profiles include:
 
-streams;
+Memory Profile;
 
-zero-copy;
+Resource Profile;
 
-shared memory;
+Async Profile;
 
-security;
+Streaming Profile;
 
-capabilities;
+Zero-Copy Profile;
 
-sandboxing;
+Shared Memory Profile;
 
-distributed communication;
+Security Profile;
 
-hardware acceleration;
+Capability Profile;
 
-tensors;
+Sandbox Profile;
 
-real-time;
+Distributed Profile;
 
-embedded systems;
+Transport Profile;
 
-observability;
+Hardware Profile;
 
-reflection.
+GPU Profile;
+
+Accelerator Profile;
+
+Tensor Profile;
+
+Real-Time Profile;
+
+Embedded Profile;
+
+Observability Profile;
+
+Debugging Profile;
+
+Internationalization Profile;
+
+Time Profile;
+
+Units Profile;
+
+Safety-Critical Profile;
+
+Verification Profile;
+
+Reliability Profile;
+
+Self-Healing Profile;
+
+Certification Profile.
 
 
 
 ---
 
-9. Interoperability Modes
+11. Interoperability Modes
 
-ULABI should support three major modes.
+ULABI should support three primary execution modes.
 
-9.1 In-Process
+11.1 In-Process
 
-+-----------------------+
-| Application Process   |
-|                       |
-| Language A            |
-|      |                |
-|    ULABI              |
-|      |                |
-| Language B            |
-+-----------------------+
++--------------------------------+
+| Application Process             |
+|                                |
+| Language A                     |
+|      |                         |
+|    ULABI                       |
+|      |                         |
+| Language B                     |
++--------------------------------+
 
-This mode may provide:
-
-very low latency;
+Possible optimizations:
 
 direct calls;
 
 shared memory;
 
-zero-copy optimizations.
+zero-copy;
+
+low-latency communication.
 
 
 
 ---
 
-9.2 Out-of-Process
+11.2 Out-of-Process
 
-+----------------+       +----------------+
-| Process A      |       | Process B      |
-|                |       |                |
-| Language A     | <---> | Language B     |
-| ULABI          |       | ULABI          |
-+----------------+       +----------------+
++----------------+      +----------------+
+| Process A      |      | Process B      |
+| Language A     |<---->| Language B     |
+| ULABI          |      | ULABI          |
++----------------+      +----------------+
 
-This mode provides stronger isolation.
+Advantages:
+
+isolation;
+
+independent failure;
+
+independent runtimes;
+
+security boundaries.
+
 
 
 ---
 
-9.3 Distributed
+11.3 Distributed
 
 Machine A                         Machine B
 
 Application                      Application
-    |                                |
-  ULABI                            ULABI
-    |                                |
-    +---------- Transport -----------+
+     |                                |
+   ULABI                            ULABI
+     |                                |
+     +---------- Transport -----------+
 
-Distributed interoperability is an extension of the Core ABI.
+Distributed operation must be defined through profiles rather than assumed to be identical to local execution.
 
 
 ---
 
-10. Transport Independence
+12. Locality Semantics
 
-ULABI must remain independent of transport.
+ULABI must distinguish:
+
+LocalOnly
+ProcessLocal
+HostLocal
+NetworkCapable
+RemoteCapable
+
+A local function must not silently become a network operation.
+
+Latency, failure, security, and consistency semantics must remain explicit.
+
+
+---
+
+13. ABI Virtualization
+
+ULABI should allow an interface to remain stable while its implementation location changes.
+
+ULABI Interface
+      |
+      +-- Same Process
+      |
+      +-- Another Process
+      |
+      +-- Container
+      |
+      +-- Virtual Machine
+      |
+      +-- Another Machine
+      |
+      +-- Cloud
+      |
+      +-- Accelerator
+      |
+      +-- Embedded Device
+
+Location transparency must never hide meaningful execution semantics.
+
+
+---
+
+14. Transport Independence
+
+ULABI should remain independent of transport.
 
 Possible transports include:
 
@@ -455,17 +692,19 @@ TCP;
 
 QUIC;
 
+WebAssembly host calls;
+
+device buses;
+
 future transports.
 
 
-A ULABI interface should not need to be redesigned merely because its transport changes.
+The interface should not need to be redesigned merely because the transport changes.
 
 
 ---
 
-11. Universal Type System
-
-ULABI needs a language-neutral semantic type system.
+15. Universal Semantic Type System
 
 Initial types:
 
@@ -485,25 +724,28 @@ Option
 Result
 Handle
 
-Future types:
+Future standardized types may include:
 
 Map
 Set
 Tuple
 Timestamp
+Duration
 Decimal
 BigInteger
 Tensor
 Matrix
 Stream
 Future
+Resource
+Capability
 
 
 ---
 
-12. Semantic Types
+16. Semantic Type Separation
 
-ULABI distinguishes:
+ULABI must distinguish:
 
 Semantic Meaning
        |
@@ -518,19 +760,19 @@ They only need to agree on the ULABI contract.
 
 ---
 
-13. Boolean
+17. Boolean
 
-ULABI Boolean values must have exactly two semantic states:
+Boolean values have exactly two semantic states:
 
 true
 false
 
-The canonical binary representation must be explicitly defined.
+The canonical representation must be explicitly defined.
 
 
 ---
 
-14. Integers
+18. Integers
 
 ULABI must define:
 
@@ -549,14 +791,14 @@ overflow behavior;
 byte order.
 
 
-The specification should avoid silently inheriting architecture-specific integer sizes.
+Architecture-specific integer sizes must never be silently assumed.
 
 
 ---
 
-15. Floating Point
+19. Floating Point
 
-ULABI should define supported floating-point representations.
+ULABI must explicitly define supported floating-point representations.
 
 The specification must address:
 
@@ -570,17 +812,19 @@ signed zero;
 
 precision;
 
-canonical encoding.
+canonical representation;
+
+comparison semantics.
 
 
 
 ---
 
-16. Strings
+20. Strings
 
-ULABI should use a standardized Unicode representation.
+ULABI should use Unicode.
 
-UTF-8 should be the primary candidate.
+UTF-8 should be the primary canonical string encoding.
 
 The specification must define:
 
@@ -600,9 +844,9 @@ normalization policy.
 
 ---
 
-17. Bytes
+21. Bytes
 
-Bytes must remain distinct from strings.
+Bytes are distinct from strings.
 
 String != Bytes
 
@@ -611,7 +855,7 @@ Bytes may contain arbitrary binary data.
 
 ---
 
-18. Unit
+22. Unit
 
 ULABI should provide a unit/no-value type.
 
@@ -619,14 +863,12 @@ Example:
 
 Result<Unit, Error>
 
-This avoids forcing every language to map "no return value" differently.
-
 
 ---
 
-19. Lists
+23. Lists
 
-ULABI should support ordered collections.
+ULABI should support ordered collections:
 
 List<T>
 
@@ -644,9 +886,9 @@ nesting behavior.
 
 ---
 
-20. Maps
+24. Maps
 
-A future extension may support:
+A Map extension may support:
 
 Map<K,V>
 
@@ -664,7 +906,7 @@ canonical representation.
 
 ---
 
-21. Records
+25. Records
 
 Example:
 
@@ -690,9 +932,9 @@ compatibility rules.
 
 ---
 
-22. Enums
+26. Enums
 
-ULABI should support enumerated values.
+Example:
 
 Status =
     Pending
@@ -700,30 +942,32 @@ Status =
     Complete
     Failed
 
+Enum identifiers must be stable.
+
 
 ---
 
-23. Variants
+27. Variants
 
-ULABI should support tagged unions.
+Example:
 
 Shape =
     Circle(radius)
     Rectangle(width, height)
     Triangle(a, b, c)
 
-Unknown variants must have defined behavior.
+Unknown variants must have explicitly defined behavior.
 
 
 ---
 
-24. Optional Values
+28. Optional Values
 
 ULABI should support:
 
 Option<T>
 
-with explicit:
+with:
 
 None
 Some(value)
@@ -731,30 +975,20 @@ Some(value)
 
 ---
 
-25. Result Values
+29. Result Values
 
 ULABI should support:
 
 Result<T,E>
 
-This allows different error models to interoperate.
-
-For example:
-
-Rust Result
-       |
-     ULABI
-       |
-Python Exception
-
-The semantic error remains identifiable across the boundary.
+This provides a common semantic model for different language error systems.
 
 
 ---
 
-26. Function ABI
+30. Function ABI
 
-Functions should have stable interface identities.
+Functions must have stable interface identities.
 
 Example:
 
@@ -780,15 +1014,17 @@ effects;
 
 capabilities;
 
-compatibility.
+execution semantics;
+
+compatibility requirements.
 
 
 
 ---
 
-27. Function Effects
+31. Function Effects
 
-ULABI should eventually support explicit effect metadata.
+ULABI should support explicit effect metadata.
 
 Possible effects:
 
@@ -802,17 +1038,73 @@ Filesystem
 GPU
 Process
 NonDeterministic
+Time
+Randomness
+ExternalDevice
 
-This helps security and analysis tools.
+Effects can be used by:
+
+security tools;
+
+static analyzers;
+
+sandboxing systems;
+
+conformance tools;
+
+permission systems.
+
 
 
 ---
 
-28. Ownership
+32. Execution Semantics
 
-ULABI must explicitly define ownership semantics.
+Operations may declare:
 
-Possible states:
+Synchronous
+Asynchronous
+Blocking
+NonBlocking
+Streaming
+OneShot
+LongRunning
+Cancellable
+Idempotent
+NonIdempotent
+
+
+---
+
+33. Memory Boundary Model
+
+ULABI must define boundary semantics for:
+
+ownership;
+
+borrowing;
+
+sharing;
+
+immutability;
+
+mutation;
+
+transfer;
+
+release;
+
+lifetime.
+
+
+ULABI must not force all languages to use the same memory-management model.
+
+
+---
+
+34. Ownership
+
+Possible ownership states:
 
 Owned
 Borrowed
@@ -825,27 +1117,191 @@ Released
 
 ---
 
-29. Borrowing
+35. Borrowing
 
 Borrowed data must have a defined lifetime.
 
-A consumer must never retain a borrowed resource beyond its permitted lifetime.
+A consumer must never retain borrowed resources beyond the permitted lifetime.
 
 
 ---
 
-30. Memory Safety
+36. Garbage Collector Interoperability
 
-ULABI must avoid requiring raw pointers to cross language boundaries.
+ULABI should support safe interoperability between:
 
-Raw pointers may exist inside implementations.
+garbage-collected languages;
 
-They should not be the default universal representation.
+reference-counted languages;
+
+ownership-based languages;
+
+manual-memory languages;
+
+region/arena-based languages.
+
+
+Boundary mechanisms may include:
+
+Owned Value
+Borrowed Value
+Pinned Value
+Opaque Handle
+Shared Immutable Value
+External Resource
 
 
 ---
 
-31. Resource ABI
+37. Callback ABI
+
+ULABI must define safe callback semantics.
+
+A callback contract must specify:
+
+callback identity;
+
+lifetime;
+
+ownership;
+
+thread;
+
+reentrancy;
+
+cancellation;
+
+errors;
+
+capabilities.
+
+
+
+---
+
+38. Reentrancy
+
+ULABI must explicitly define whether:
+
+A -> B -> A
+
+is permitted.
+
+Where reentrancy is permitted, the contract must address:
+
+locks;
+
+ownership;
+
+cancellation;
+
+errors;
+
+state consistency.
+
+
+
+---
+
+39. Threading Model
+
+ULABI must support metadata such as:
+
+ThreadSafe
+ThreadConfined
+SingleThreaded
+ActorConfined
+Reentrant
+NonReentrant
+
+ULABI should not impose one threading model on all languages.
+
+
+---
+
+40. Concurrency
+
+Profiles may define:
+
+synchronization;
+
+atomic operations;
+
+memory ordering;
+
+lock semantics;
+
+actors;
+
+tasks;
+
+futures;
+
+cancellation;
+
+scheduling.
+
+
+
+---
+
+41. Time ABI
+
+ULABI should define:
+
+Timestamp
+Duration
+MonotonicTime
+WallClockTime
+Deadline
+Timeout
+ClockSource
+Precision
+
+ULABI must distinguish:
+
+UTC time != Monotonic time
+
+
+---
+
+42. Units and Quantities
+
+ULABI should support semantic quantities such as:
+
+10 meters
+5 kilograms
+20 milliseconds
+3 gigabytes
+
+Units must remain explicit.
+
+
+---
+
+43. Internationalization
+
+ULABI should provide profiles for:
+
+Unicode;
+
+locale;
+
+calendars;
+
+time zones;
+
+collation;
+
+number formats;
+
+normalization.
+
+
+
+---
+
+44. Resource ABI
 
 ULABI resources may represent:
 
@@ -861,21 +1317,21 @@ devices;
 
 GPU contexts;
 
-shared-memory regions;
+shared memory;
 
-operating-system handles;
+OS handles;
 
 runtime-managed objects.
 
 
-Resources should be represented by safe handles.
+Resources should normally be represented using safe handles rather than raw pointers.
 
 
 ---
 
-32. Resource Lifecycle
+45. Resource Lifecycle
 
-Resources may follow:
+A resource may follow:
 
 Create
    |
@@ -894,18 +1350,9 @@ Release
 
 ---
 
-33. Resource Lifetime
+46. Resource Revocation
 
-A resource must not remain valid after its defined lifetime.
-
-Invalid access must result in a defined failure.
-
-
----
-
-34. Resource Revocation
-
-Future security extensions should support revocation.
+Security profiles should support:
 
 Granted
    |
@@ -918,16 +1365,16 @@ Denied
 
 ---
 
-35. Resource Delegation
+47. Resource Delegation
 
-A component may delegate a restricted capability to another component.
+A component may delegate restricted capabilities.
 
 Delegation must not permit privilege escalation.
 
 
 ---
 
-36. Resource Quotas
+48. Resource Quotas
 
 ULABI runtimes may enforce:
 
@@ -945,13 +1392,15 @@ handle limits;
 
 GPU limits;
 
-message-size limits.
+message-size limits;
+
+execution-time limits.
 
 
 
 ---
 
-37. Canonical Binary Encoding
+49. Canonical Binary Encoding
 
 ULABI must define a canonical binary representation.
 
@@ -981,9 +1430,9 @@ invalid representations.
 
 ---
 
-38. Canonical Serialization
+50. Canonical Serialization
 
-The same semantic value must produce the same canonical representation under the same specification rules.
+The same semantic value must produce the same canonical representation under identical specification rules.
 
 This enables:
 
@@ -1003,7 +1452,7 @@ content addressing.
 
 ---
 
-39. Safe Decoding
+51. Safe Decoding
 
 Decoders must validate before trusting data.
 
@@ -1019,19 +1468,21 @@ malformed data;
 
 truncated input;
 
-invalid type identifiers;
+invalid type IDs;
 
 invalid variants;
 
-excessive allocation.
+excessive allocation;
+
+resource exhaustion.
 
 
 
 ---
 
-40. Maximum Limits
+52. Resource Limits
 
-ULABI implementations should support configurable limits for:
+Implementations should support configurable limits for:
 
 maximum message size;
 
@@ -1045,13 +1496,15 @@ maximum number of fields;
 
 maximum allocation;
 
-maximum execution time.
+maximum execution time;
+
+maximum stream length.
 
 
 
 ---
 
-41. Zero-Copy
+53. Zero-Copy
 
 ULABI should support zero-copy where safe.
 
@@ -1080,11 +1533,9 @@ Zero-copy is an optimization, not a semantic requirement.
 
 ---
 
-42. Shared Memory
+54. Shared Memory
 
-Future profiles may support shared memory.
-
-Shared memory must define:
+Shared-memory profiles must define:
 
 ownership;
 
@@ -1104,11 +1555,11 @@ isolation.
 
 ---
 
-43. Immutable Data
+55. Immutable Data
 
 Immutable data should be explicitly representable.
 
-Benefits include:
+Benefits:
 
 safe sharing;
 
@@ -1124,7 +1575,7 @@ deterministic behavior.
 
 ---
 
-44. Mutable Data
+56. Mutable Data
 
 Mutable data must define:
 
@@ -1142,7 +1593,7 @@ visibility.
 
 ---
 
-45. Error ABI
+57. Error ABI
 
 Errors should be structured.
 
@@ -1156,393 +1607,156 @@ Cause
 Context
 Retryable
 Severity
+Origin
+RecoveryHint
 
 
 ---
 
-46. Error Categories
+58. Error Categories
 
-ULABI should distinguish:
+ULABI should define common semantic categories:
 
 ValidationError
 TypeError
 EncodingError
+DecodingError
 ResourceError
 PermissionError
 TimeoutError
-CancellationError
-TransportError
+NetworkError
+CompatibilityError
 VersionError
+CapabilityError
+CancellationError
+ConcurrencyError
+StateError
 SecurityError
-ImplementationError
-UnknownError
+IntegrityError
+UnavailableError
+InternalError
+
+Implementations may define additional domain-specific errors.
 
 
 ---
 
-47. Error Chains
+59. Error Propagation
 
-Errors may contain causes.
+Errors must remain identifiable across language boundaries.
 
-Application Error
+For example:
+
+Rust Result
       |
-      v
-ULABI Error
+    ULABI
       |
-      v
-Underlying Error
-
-
----
-
-48. Concurrency
-
-ULABI should support concurrency without forcing a particular language model.
-
-Possible concepts:
-
-Future;
-
-Promise;
-
-Stream;
-
-Task;
-
-Cancellation;
-
-Deadline;
-
-Backpressure.
-
-
-
----
-
-49. Future
-
-Future<T>
-
-Possible states:
-
-Pending
-Completed
-Failed
-Cancelled
-
-
----
-
-50. Streams
-
-Stream<T>
-
-A stream should support:
-
-items;
-
-completion;
-
-errors;
-
-cancellation;
-
-backpressure;
-
-bounded buffering.
-
-
-
----
-
-51. Backpressure
-
-Consumers must be able to control producer pressure.
-
-ULABI must prevent implicit unlimited buffering.
-
-
----
-
-52. Cancellation
-
-Long-running operations should support cancellation where applicable.
-
-Cancellation must define:
-
-when it takes effect;
-
-cleanup;
-
-resource release;
-
-resulting error/state.
-
-
-
----
-
-53. Deadlines
-
-Operations may have deadlines.
-
-deadline = timestamp
-
-Deadline behavior must be explicitly defined.
-
-
----
-
-54. Determinism
-
-ULABI should classify behavior as:
-
-Deterministic
-Implementation-Defined
-Environment-Dependent
-Non-Deterministic
-
-This is important for:
-
-testing;
-
-distributed systems;
-
-scientific computing;
-
-reproducibility;
-
-formal verification.
-
-
-
----
-
-55. Capability-Based Security
-
-ULABI should use capability-oriented security.
-
-Instead of:
-
-"Component has filesystem access."
-
-use:
-
-FileCapability
-    |
-    +-- Read
-    +-- Write
-    +-- Scope
-    +-- Lifetime
-
-
----
-
-56. Capability Attenuation
-
-Capabilities should be restrictable.
-
-Full Capability
+Python Exception
       |
-Restricted Capability
-      |
-Read-Only Capability
-      |
-Single Resource
+   Java Error
 
-A restricted capability must not be able to become unrestricted.
+The semantic error identity should remain recoverable.
 
 
 ---
 
-57. Identity
+60. Retry Semantics
 
-ULABI may define identity metadata for:
+ULABI must never assume every failed operation is safe to retry.
 
-interfaces;
+Contracts may specify:
 
-implementations;
-
-components;
-
-instances;
-
-security principals.
-
-
-
----
-
-58. Authentication
-
-Future security profiles may support:
-
-signatures;
-
-certificates;
-
-platform identity;
-
-hardware-backed identity;
-
-local trust.
-
-
-Authentication must remain separate from authorization.
-
-
----
-
-59. Authorization
-
-Conceptual model:
-
-Identity
-   |
-Authentication
-   |
-Authorization
-   |
-Capability
-   |
-Resource
-
-
----
-
-60. Sandboxing
-
-ULABI should support:
-
-process isolation;
-
-operating-system sandboxes;
-
-virtual machines;
-
-WebAssembly;
-
-hardware isolation;
-
-runtime isolation.
-
-
-No single sandbox technology should be mandatory.
-
-
----
-
-61. Fault Isolation
-
-Out-of-process components should isolate:
-
-crashes;
-
-memory exhaustion;
-
-malformed input;
-
-infinite loops;
-
-resource abuse.
-
-
-
----
-
-62. Failure-Oriented Design
-
-Failures must be:
-
-explicit;
-
-typed where possible;
-
-bounded;
-
-observable;
-
-safely contained;
-
-recoverable where practical.
-
-
-
----
-
-63. Recovery
-
-Higher-level runtimes may provide:
-
-restart;
-
-retry;
-
-checkpointing;
-
-state recovery;
-
-graceful degradation.
-
-
-
----
-
-64. Replay Protection
-
-Security-sensitive operations may use:
-
-nonces;
-
-sequence numbers;
-
-timestamps;
-
-operation IDs;
-
-cryptographic authentication.
-
-
-
----
-
-65. Idempotency
-
-Operations should optionally declare:
-
+RetrySafe
+RetryUnsafe
+RetryConditional
 Idempotent
-Non-Idempotent
-Conditionally Idempotent
-
-This is important for distributed systems.
+NonIdempotent
 
 
 ---
 
-66. Interface Identification
+61. ABI Identity
 
-Every interface should have a stable identity.
-
-Conceptual structure:
-
-Namespace
-Interface
-Major Version
-Minor Version
-Feature Set
+Every ULABI interface, type, function, error, capability, and profile should have a stable identity.
 
 Example:
 
-org.example.storage.FileSystem@1.0
+Interface ID
+Type ID
+Function ID
+Error ID
+Capability ID
+Profile ID
 
-The final identifier scheme is a design decision to be resolved.
+Names alone must not be relied upon for identity.
 
 
 ---
 
-67. Interface Description Language
+62. Cryptographic Identity
 
-ULABI should eventually define an Interface Description Language.
+ULABI may use cryptographically derived identifiers where appropriate.
+
+Stable identity must survive:
+
+renaming;
+
+implementation changes;
+
+compiler changes;
+
+language changes;
+
+deployment changes.
+
+
+
+---
+
+63. Namespace System
+
+ULABI should support globally unique namespaces.
+
+Examples:
+
+org.ulabi.core.String
+org.ulabi.core.Result
+org.example.storage
+com.example.payment
+edu.example.research
+
+Namespace governance must remain open and vendor-neutral.
+
+
+---
+
+64. Schema Registry
+
+ULABI should provide a registry for:
+
+interfaces;
+
+types;
+
+functions;
+
+errors;
+
+capabilities;
+
+profiles;
+
+versions.
+
+
+A registry must support discovery without making runtime access dependent on the registry.
+
+
+---
+
+65. Machine-Readable ULABI IDL
+
+ULABI should define a machine-readable interface description language.
 
 Example:
 
@@ -1558,332 +1772,1001 @@ interface Storage {
     ) -> Result<Unit, StorageError>
 }
 
-The IDL must be implementation-language independent.
+The IDL should be capable of generating:
 
+bindings;
 
----
+adapters;
 
-68. Interface Discovery
+validators;
 
-Components may expose:
+compatibility reports;
 
-interfaces;
+documentation;
 
-versions;
+test cases;
 
-capabilities;
-
-security requirements;
-
-resource requirements;
-
-supported architectures.
+conformance metadata.
 
 
 
 ---
 
-69. Capability Negotiation
+66. IDL as a Source of Truth
 
-A consumer should be able to ask:
+The machine-readable contract should be capable of serving as the authoritative interface definition.
 
-Which ULABI features do you support?
+From one contract:
 
-Possible capabilities:
-
-Core
-Resources
-Async
-Streams
-ZeroCopy
-SharedMemory
-Security
-Distributed
-GPU
-Tensor
-
-
----
-
-70. Feature Flags
-
-Interfaces may declare:
-
-Required:
-    Core
-    Types
-    Errors
-
-Optional:
-    Async
-    Streams
-    ZeroCopy
-
-Unsupported required features must cause negotiation failure.
+ULABI IDL
+    |
+    +-- Language Bindings
+    |
+    +-- ABI Metadata
+    |
+    +-- Documentation
+    |
+    +-- Validators
+    |
+    +-- Compatibility Tests
+    |
+    +-- Conformance Tests
 
 
 ---
 
-71. Interface Composition
+67. ABI Negotiation
 
-Interfaces should be composable.
-
-Storage
-+
-Security
-+
-Logging
-+
-Metrics
-=
-Application Component
-
-
----
-
-72. Interface Extension
-
-Interfaces should evolve through controlled extension.
-
-Storage v1
-   |
-Storage v1.1
-   |
-Storage v2
-
-Existing clients must not unexpectedly break.
-
-
----
-
-73. Optional Interfaces
-
-A component may provide optional functionality.
+Two components should be able to negotiate supported capabilities and versions.
 
 Example:
 
-Required:
-    Storage
+A -> Supported:
+     Core 1.2
+     Streams
+     Async
+     Encryption
 
-Optional:
-    Encryption
-    Compression
-    Streaming
-    Transactions
+B -> Supported:
+     Core 1.1
+     Streams
+     Encryption
+
+Negotiated:
+     Core 1.1
+     Streams
+     Encryption
+
+Negotiation must never silently downgrade security.
 
 
 ---
 
-74. Compatibility Model
+68. Capability Discovery
+
+Components may advertise:
+
+Supported Interfaces
+Supported Versions
+Supported Features
+Supported Transports
+Supported Security Profiles
+Supported Architectures
+Supported Recovery Profiles
+
+
+---
+
+69. Semantic Compatibility
 
 ULABI must distinguish:
 
-binary compatibility;
+Binary Compatibility
+ABI Compatibility
+Type Compatibility
+Interface Compatibility
+Semantic Compatibility
+Behavioral Compatibility
+Security Compatibility
 
-semantic compatibility;
-
-interface compatibility;
-
-source compatibility;
-
-behavioral compatibility.
-
-
-
----
-
-75. Version Negotiation
-
-Implementations should negotiate:
-
-supported versions;
-
-required versions;
-
-optional versions;
-
-features;
-
-compatibility constraints.
-
+Binary compatibility alone is insufficient.
 
 
 ---
 
-76. ABI Stability
+70. Compatibility Analyzer
 
-Once a ULABI interface reaches a stable release, breaking changes should require a new major version.
+ULABI tooling should compare contracts.
 
+Example:
 
----
+ulabi verify producer.ulabi consumer.ulabi
 
-77. Unknown Fields
+Possible output:
 
-Future versions may introduce new fields.
-
-Older consumers should be able to safely ignore fields they do not understand where the interface contract permits it.
-
-
----
-
-78. Unknown Variants
-
-Unknown variants must be rejected or preserved according to the interface's compatibility rules.
+✓ Type compatibility
+✓ ABI compatibility
+✓ Version compatibility
+✓ Error compatibility
+✓ Capability compatibility
+✗ Stream contract incompatible
 
 
 ---
 
-79. Distributed ABI
+71. ABI Diff
 
-Distributed ULABI should preserve semantic compatibility with local ULABI where practical.
+ULABI should provide:
 
-Local Call
+ulabi diff v1.ulabi v2.ulabi
+
+Example:
+
+ULABI v1 -> v2
+
+✓ Backward compatible
+✓ Existing fields preserved
+⚠ New optional field
+✓ Existing functions preserved
+✓ Error extensions compatible
+
+Breaking changes must be explicitly identified.
+
+
+---
+
+72. ABI Migration
+
+ULABI tooling should eventually generate migration assistance.
+
+Example:
+
+ULABI v1
    |
-ULABI
+Migration Analyzer
    |
-Transport
-   |
-ULABI
-   |
-Remote Call
+ULABI v2
+
+Detected changes should include:
+
+renamed functions;
+
+changed fields;
+
+deprecated fields;
+
+incompatible types;
+
+changed errors;
+
+capability changes.
+
 
 
 ---
 
-80. Distributed Security
+73. Versioning
 
-Distributed profiles must address:
+ULABI should support explicit versioning.
+
+Possible model:
+
+Major.Minor.Patch
+
+Rules must distinguish:
+
+additive changes;
+
+compatible changes;
+
+deprecated changes;
+
+breaking changes.
+
+
+
+---
+
+74. Long-Term Compatibility
+
+Stable ULABI interfaces should remain usable for as long as technically and securely possible.
+
+Compatibility must be a deliberate design goal.
+
+
+---
+
+75. Capability-Based Security
+
+ULABI security should be capability-oriented.
+
+Instead of:
+
+Application has all permissions
+
+use:
+
+Application
+   |
+Granted Capability
+   |
+Specific Resource
+
+Capabilities should be:
+
+explicit;
+
+scoped;
+
+revocable;
+
+delegable only under policy;
+
+auditable.
+
+
+
+---
+
+76. Security Profiles
+
+ULABI should support multiple security levels.
+
+Example:
+
+ULABI-S1
+ULABI-S2
+ULABI-S3
+
+Possible progression:
+
+S1 = Validation
+S2 = Capabilities + Isolation
+S3 = High-Assurance + Formal Verification
+
+
+---
+
+77. Sandboxing
+
+ULABI should support isolated components through:
+
+processes;
+
+containers;
+
+virtual machines;
+
+WebAssembly;
+
+OS sandboxing;
+
+hardware isolation.
+
+
+ULABI should define security semantics rather than require one sandbox implementation.
+
+
+---
+
+78. Cryptographic Agility
+
+ULABI must avoid permanently hard-coding a single cryptographic algorithm.
+
+Security profiles should allow algorithms to evolve.
+
+
+---
+
+79. Post-Quantum Readiness
+
+ULABI security architecture should be designed so cryptographic algorithms can be replaced without redesigning the Core.
+
+
+---
+
+80. Authentication and Authorization
+
+Security profiles may define:
+
+component identity;
 
 authentication;
 
 authorization;
 
-encryption;
+capability delegation;
 
-replay protection;
+key management;
 
-downgrade protection;
+credential lifetime;
+
+revocation.
+
+
+
+---
+
+81. Integrity
+
+ULABI should support integrity mechanisms for:
+
+interfaces;
+
+messages;
+
+schemas;
+
+resources;
+
+state;
+
+checkpoints.
+
+
+
+---
+
+82. ABI Provenance
+
+Implementations may expose provenance metadata including:
+
+implementation identity;
+
+version;
+
+compiler;
+
+runtime;
+
+build ID;
+
+source revision;
+
+dependency information.
+
+
+
+---
+
+83. Build Provenance
+
+ULABI certification profiles should support reproducible and verifiable build metadata.
+
+
+---
+
+84. Observability
+
+ULABI should define optional standard metadata:
+
+Trace ID
+Span ID
+Operation ID
+Component ID
+Interface ID
+
+This allows cross-language distributed tracing.
+
+
+---
+
+85. Cross-Language Debugging
+
+Debugging tools should be able to follow:
+
+Zamani
+   |
+ULABI
+   |
+Rust
+   |
+ULABI
+   |
+Python
+
+A debugger should be able to expose the cross-language call chain where implementations provide the required metadata.
+
+
+---
+
+86. Cross-Language Stack Traces
+
+ULABI debugging metadata may contain:
+
+Language
+Runtime
+Component
+Interface
+Function
+Source Location
+Operation ID
+
+Sensitive information must remain controlled.
+
+
+---
+
+87. Deterministic Simulation
+
+ULABI should provide a testing profile capable of controlling:
+
+time;
+
+randomness;
+
+network;
+
+latency;
+
+resource limits;
+
+failures.
+
+
+This enables reproducible interoperability testing.
+
+
+---
+
+88. Fault Injection
+
+ULABI conformance environments should be able to simulate:
+
+Timeout
+Crash
+Out-of-Memory
+Network Failure
+Permission Denial
+Malformed Input
+Resource Exhaustion
+Version Mismatch
+Corrupted State
+
+
+---
+
+89. Chaos Testing
+
+ULABI ecosystems should support controlled failure testing.
+
+Example:
+
+Normal System
+      |
+Controlled Failure
+      |
+Observe
+      |
+Recover
+      |
+Verify
+
+
+---
+
+90. Self-Healing Architecture
+
+ULABI should support an optional Reliability and Self-Healing Profile.
+
+Proposed profile:
+
+ULABI-R
+
+The profile provides standardized semantics for:
+
+health monitoring;
+
+failure detection;
+
+recovery;
+
+checkpointing;
+
+rollback;
+
+retry;
+
+circuit breaking;
+
+reconnection;
+
+failover;
+
+isolation;
+
+degradation;
+
+recovery verification.
+
+
+Self-healing is an extension profile, not a mandatory Core feature.
+
+
+---
+
+91. Self-Healing Principles
+
+ULABI self-healing must follow:
+
+1. Explicit authority.
+
+
+2. Bounded recovery.
+
+
+3. No unrestricted self-modification.
+
+
+4. No privilege escalation.
+
+
+5. Recovery must be observable.
+
+
+6. Recovery must be verifiable.
+
+
+7. Recovery must preserve security policy.
+
+
+8. Recovery must respect resource limits.
+
+
+9. Recovery must preserve data integrity.
+
+
+10. Recovery must have deterministic failure behavior where possible.
+
+
+
+
+---
+
+92. Health Model
+
+Components may expose:
+
+Liveness
+Readiness
+Healthy
+Degraded
+Recovering
+Unavailable
+Failed
+
+Liveness must not be confused with readiness.
+
+
+---
+
+93. Failure Detection
+
+ULABI-R may detect:
+
+process crashes;
 
 timeouts;
 
+repeated errors;
+
+protocol violations;
+
+corrupted messages;
+
+resource exhaustion;
+
+deadlocks;
+
+unavailable dependencies;
+
+version incompatibility;
+
+integrity failures;
+
+security violations.
+
+
+
+---
+
+94. Recovery Capabilities
+
+Recovery actions may include:
+
+Retry
+Reconnect
+Restart
+Rollback
+RestoreState
+Failover
+Isolate
+Degrade
+Reload
+
+A component must receive explicit authority for each recovery capability.
+
+
+---
+
+95. Recovery Capability Model
+
+Example:
+
+RecoveryCapabilities
+    |
+    +-- Retry
+    +-- Restart
+    +-- Reconnect
+    +-- Rollback
+    +-- RestoreState
+    +-- Failover
+    +-- Isolation
+    +-- DegradedOperation
+
+No recovery action should be implicitly authorized.
+
+
+---
+
+96. Retry and Backoff
+
+ULABI-R should define:
+
+retry count;
+
+retry eligibility;
+
+exponential backoff;
+
+jitter;
+
+timeout;
+
+retry budget;
+
+idempotency requirements.
+
+
+
+---
+
+97. Circuit Breaker
+
+ULABI-R may implement:
+
+Healthy
+   |
+Repeated Failure
+   |
+Degraded
+   |
+Circuit Open
+   |
+Isolation
+   |
+Recovery Probe
+   |
+Healthy
+
+This prevents cascading failures.
+
+
+---
+
+98. Checkpointing
+
+Stateful components may expose checkpoints.
+
+State N
+   |
+Checkpoint
+   |
+State N+1
+   |
+Failure
+   |
+Restore
+   |
+Verify
+   |
+Resume
+
+Checkpoint formats must be versioned and integrity-protected.
+
+
+---
+
+99. Rollback
+
+Rollback must be:
+
+explicit;
+
+authorized;
+
+integrity-checked;
+
+version-aware;
+
+observable.
+
+
+
+---
+
+100. Failover
+
+A component may fail over to:
+
+another process;
+
+another runtime;
+
+another machine;
+
+another replica;
+
+another implementation.
+
+
+Failover must preserve interface semantics.
+
+
+---
+
+101. Isolation
+
+Failed components should be isolated when necessary.
+
+Isolation must prevent:
+
+cascading failures;
+
+capability leakage;
+
+corrupted shared state;
+
+privilege escalation.
+
+
+
+---
+
+102. Graceful Degradation
+
+Components may declare degraded capabilities.
+
+Example:
+
+Full Service
+     |
+GPU unavailable
+     |
+CPU fallback
+     |
+Reduced performance
+
+Degraded behavior must be explicitly defined.
+
+
+---
+
+103. Recovery Verification
+
+Recovery is not complete until verification succeeds.
+
+Recover
+   |
+Health Check
+   |
+State Integrity Check
+   |
+Interface Check
+   |
+Security Check
+   |
+Resource Check
+   |
+Resume
+
+If verification fails, the system must follow the next authorized recovery or escalation policy.
+
+
+---
+
+104. Self-Healing Telemetry
+
+ULABI-R should define optional events:
+
+component.failed
+component.degraded
+recovery.started
+recovery.completed
+recovery.failed
+rollback.started
+rollback.completed
+failover.started
+failover.completed
+isolation.started
+isolation.completed
+
+
+---
+
+105. Recovery Levels
+
+ULABI-R may define:
+
+R0 - No Automatic Recovery
+R1 - Safe Retry
+R2 - Restart / Reconnect
+R3 - State Recovery
+R4 - Failover
+R5 - Verified Autonomous Recovery
+
+Higher levels require stronger conformance requirements.
+
+
+---
+
+106. Self-Healing Security Boundary
+
+Self-healing must never become unrestricted autonomous modification.
+
+ULABI-R implementations must not automatically:
+
+grant themselves capabilities;
+
+bypass authorization;
+
+disable security controls;
+
+alter security policy;
+
+modify protected code without authorization;
+
+escalate privileges.
+
+
+
+---
+
+107. Self-Healing Conformance
+
+Testing should deliberately introduce failures:
+
+Kill Process
+     |
+Corrupt Message
+     |
+Introduce Timeout
+     |
+Disconnect Network
+     |
+Exhaust Resource
+     |
+Provide Version Mismatch
+
+Then measure:
+
+detection time;
+
+recovery time;
+
+data loss;
+
+state integrity;
+
+security preservation;
+
+availability;
+
+correctness.
+
+
+
+---
+
+108. Self-Healing Does Not Mean Self-Modifying
+
+ULABI explicitly distinguishes:
+
+Self-Healing
+    !=
+Unrestricted Self-Modification
+
+Self-healing means controlled recovery within declared authority.
+
+
+---
+
+109. Distributed Systems Profile
+
+Distributed ULABI must address:
+
+latency;
+
+partial failure;
+
 retries;
 
-message integrity.
+ordering;
+
+duplication;
+
+delivery guarantees;
+
+timeouts;
+
+cancellation;
+
+consistency;
+
+authentication;
+
+encryption;
+
+partition tolerance.
 
 
 
 ---
 
-81. Transport Security
+110. Consistency Models
 
-ULABI must not require one network security protocol.
+Distributed profiles may declare:
 
-Implementations may use appropriate secure transports.
+Strong
+Linearizable
+Sequential
+Causal
+Eventual
+BestEffort
 
-
----
-
-82. Large Data
-
-ULABI should support:
-
-large files;
-
-datasets;
-
-images;
-
-videos;
-
-tensors;
-
-scientific data.
-
-
-Mechanisms include:
-
-streams;
-
-handles;
-
-shared memory;
-
-memory mapping;
-
-external object references.
-
+The ABI must never pretend all distributed systems provide identical consistency.
 
 
 ---
 
-83. Tensor ABI
+111. Atomicity
 
-A future extension should support tensors.
+Operations may declare:
 
-Possible metadata:
-
-Shape
-Data Type
-Rank
-Dimensions
-Stride
-Layout
-Endianness
-Memory Location
-Device
+Atomic
+Transactional
+EventuallyConsistent
+BestEffort
 
 
 ---
 
-84. GPU and Accelerator ABI
+112. Message Semantics
 
-Future extensions may expose:
+Distributed profiles should distinguish:
 
-GPU buffers;
+AtMostOnce
+AtLeastOnce
+ExactlyOnceSemantic
+BestEffort
 
-GPU contexts;
-
-command queues;
-
-device handles;
-
-accelerator memory;
-
-accelerator execution.
-
+"Exactly once" must not be claimed merely because a transport retries messages.
 
 
 ---
 
-85. Hardware Neutrality
+113. Cancellation
 
-ULABI should not assume:
+Long-running operations should support standardized cancellation semantics where possible.
 
-NVIDIA;
-
-AMD;
-
-Intel;
-
-Apple;
-
-Qualcomm;
-
-ARM;
-
-any other specific vendor.
-
-
-Hardware-specific adapters belong below or beside ULABI.
+Cancellation must be explicit and observable.
 
 
 ---
 
-86. SIMD and Acceleration
+114. Hardware and Accelerator Profile
 
-Implementations may optimize through:
-
-SIMD;
+ULABI should support interoperability with:
 
 GPUs;
 
@@ -1893,464 +2776,575 @@ TPUs;
 
 FPGAs;
 
-specialized hardware.
+DSPs;
+
+cryptographic accelerators;
+
+AI accelerators;
+
+custom hardware.
 
 
-Optimizations must preserve ULABI semantics.
+Hardware-specific details should remain in profiles.
 
 
 ---
 
-87. Embedded Profile
+115. Tensor Profile
 
-ULABI should eventually define an embedded profile for environments with:
+A tensor profile may standardize:
 
-limited RAM;
+Shape
+Data Type
+Layout
+Device
+Memory Location
+Stride
+Ownership
 
-limited storage;
+This enables interoperability between different AI and numerical computing systems.
+
+
+---
+
+116. Embedded Profile
+
+ULABI should support constrained systems.
+
+The Embedded Profile may address:
+
+limited memory;
+
+limited CPU;
+
+deterministic execution;
 
 no operating system;
 
-no dynamic allocation;
+static allocation;
 
-deterministic execution.
+hardware peripherals;
+
+interrupt contexts.
 
 
 
 ---
 
-88. Real-Time Profile
+117. Real-Time Profile
 
-A future real-time profile may require:
+Real-time profiles may specify:
+
+deadlines;
+
+priorities;
 
 bounded execution;
 
-bounded allocation;
+jitter;
 
-predictable resource use;
+scheduling;
 
-deterministic behavior;
+deterministic allocation;
 
-defined failure behavior.
-
-
-
----
-
-89. Offline Operation
-
-Core ULABI functionality must not require internet access.
-
-This allows use in:
-
-air-gapped systems;
-
-embedded systems;
-
-secure environments;
-
-local applications;
-
-offline systems.
+worst-case behavior.
 
 
 
 ---
 
-90. Observability
+118. Safety-Critical Profile
 
-An optional observability layer may provide:
+ULABI should eventually support profiles for:
 
-logs;
+aviation;
 
-metrics;
+automotive;
 
-traces;
+medical;
 
-operation IDs;
+industrial control;
 
-correlation IDs;
+railway;
 
-latency;
+energy;
 
-resource usage.
-
-
-Sensitive metadata must not leak unintentionally.
+other high-assurance environments.
 
 
----
+The Core remains generic.
 
-91. Debugging
-
-Optional debugging metadata may include:
-
-interface name;
-
-function name;
-
-source location;
-
-component ID;
-
-version;
-
-error location;
-
-stack metadata.
-
+Safety profiles impose stronger requirements.
 
 
 ---
 
-92. Profiling
+119. Certification Evidence
 
-Optional profiling information may include:
+A certified implementation may publish machine-readable evidence:
 
-CPU time;
+Conformance
+Security Tests
+Fuzzing
+Formal Verification
+Build Provenance
+Dependencies
+Known Vulnerabilities
+Architecture Coverage
+Recovery Tests
 
-memory;
 
-allocations;
+---
 
-I/O;
+120. Formal Verification
 
-GPU usage;
+Critical ULABI components should be candidates for formal verification.
 
-latency;
+Potential targets:
 
-throughput.
+canonical encoders;
+
+decoders;
+
+type validators;
+
+compatibility algorithms;
+
+security enforcement;
+
+capability handling;
+
+recovery state machines.
 
 
 
 ---
 
-93. Reflection
+121. Fuzz Testing
 
-Optional reflection may allow applications to inspect:
+ULABI implementations should be fuzzed against:
 
-Interface
-   |
-   +-- Functions
-   +-- Types
-   +-- Errors
-   +-- Resources
-   +-- Capabilities
+malformed encodings;
 
-Reflection should not be mandatory.
+random schemas;
 
+invalid types;
 
----
+oversized messages;
 
-94. Introspection
+nested structures;
 
-Implementations may expose supported:
+corrupted state;
 
-interfaces;
+incompatible versions.
 
-versions;
-
-features;
-
-resources;
-
-architectures.
-
-
-Security-sensitive environments may restrict introspection.
 
 
 ---
 
-95. Language Bindings
+122. Golden Interoperability Corpus
 
-ULABI should provide tools for generating language bindings.
+ULABI should maintain a permanent public corpus containing:
 
-ULABI IDL
-                    |
-                    v
-             Binding Generator
-                    |
-       +------------+------------+
-       |            |            |
-      C           Rust        Python
+valid values;
 
-Generated bindings should be thin wrappers around the ULABI contract.
+invalid values;
+
+edge cases;
+
+compatibility scenarios;
+
+security cases;
+
+recovery cases;
+
+architecture-specific cases.
 
 
----
-
-96. Manual Bindings
-
-Languages without automated tooling must still be able to implement ULABI manually.
-
-The specification must therefore be sufficiently precise for independent implementations.
+All implementations should test against the same corpus.
 
 
 ---
 
-97. Reference Implementation
+123. Conformance Testing
 
-The first reference implementation should be written in Rust.
+A ULABI implementation should be tested for:
 
-Reasons:
-
-memory safety;
-
-strong type system;
-
-low-level control;
-
-concurrency;
-
-binary processing;
-
-fuzzing ecosystem;
-
-security.
-
-
-Rust is an implementation choice, not a requirement of ULABI.
+Core
+Types
+Encoding
+Decoding
+Errors
+Versioning
+Security
+Memory
+Resources
+Concurrency
+Transport
+Distributed Behavior
+Recovery
 
 
 ---
 
-98. C Compatibility
+124. Interoperability Laboratory
 
-A C-compatible interface should be developed early because C remains important for:
+ULABI should eventually maintain a compatibility matrix:
 
-operating systems;
+CPU
+ ×
+Operating System
+ ×
+Compiler
+ ×
+Language
+ ×
+Runtime
+ ×
+ULABI Version
+ ×
+Profile
 
-embedded systems;
+Example:
 
-existing native libraries;
-
-language runtimes;
-
-hardware interfaces.
-
-
-The goal is interoperability, not making C the definition of ULABI.
-
-
----
-
-99. Python Tooling
-
-Python can initially be used for:
-
-test generation;
-
-validation tools;
-
-reference scripts;
-
-conformance utilities;
-
-examples.
-
-
-Python is not part of the ULABI Core ABI.
+Linux × ARM64 × Rust × Python × Core
+Linux × x86-64 × C × Rust × Streams
+Windows × x86-64 × C++ × Go × Security
+macOS × ARM64 × Swift × Rust × Core
+RISC-V × Linux × C × Rust × Embedded
 
 
 ---
 
-100. Initial Language Support
+125. Multiple Independent Implementations
 
-Initial implementation targets:
+The specification must not depend on one implementation.
 
-Rust <-> Rust
-C <-> Rust
-Python <-> Rust
+ULABI should encourage:
 
-Later:
+Implementation A
+Implementation B
+Implementation C
 
+all independently passing the same conformance suite.
+
+
+---
+
+126. No Single Implementation Defines ULABI
+
+The specification defines ULABI.
+
+Implementations demonstrate conformance.
+
+No single implementation should become the sole authority.
+
+
+---
+
+127. Architecture Neutrality
+
+ULABI should support:
+
+x86;
+
+x86-64;
+
+ARM32;
+
+ARM64;
+
+RISC-V;
+
+other architectures.
+
+
+Architecture-specific optimizations must not change semantic behavior.
+
+
+---
+
+128. Endianness
+
+ULABI must explicitly define representation across:
+
+little-endian systems;
+
+big-endian systems;
+
+mixed environments.
+
+
+
+---
+
+129. 32-bit and 64-bit Systems
+
+ULABI must not assume:
+
+sizeof(pointer) == sizeof(integer)
+
+or any architecture-specific relationship.
+
+
+---
+
+130. WebAssembly
+
+ULABI may interoperate with WebAssembly.
+
+WebAssembly should be treated as an implementation or execution environment rather than as the definition of ULABI.
+
+
+---
+
+131. Existing ABIs
+
+ULABI should provide adapters for existing ABIs where practical.
+
+Examples may include:
+
+C ABI;
+
+platform ABIs;
+
+WebAssembly interfaces;
+
+language-specific FFI systems.
+
+
+Adapters must not redefine ULABI semantics.
+
+
+---
+
+132. Language Bindings
+
+ULABI tooling should eventually support generated bindings for languages such as:
+
+C
 C++
+Rust
+Python
 Go
 Java
 C#
-JavaScript
-TypeScript
 Swift
 Kotlin
-WebAssembly
-
-Future:
-
+JavaScript
+TypeScript
 Zamani
 Sankofa
-Other languages
+
+Additional languages should be supported through the same specification mechanism.
+
+
+---
+
+133. Language Adapter Architecture
+
+Language
+   |
+Native Adapter
+   |
+ULABI Contract
+   |
+Native Adapter
+   |
+Other Language
 
 Each language remains independent.
 
 
 ---
 
-101. Existing Standards
+134. Compiler Integration
 
-ULABI must explicitly study existing interoperability technologies.
+Compilers may:
 
-Relevant technologies include:
+generate ULABI bindings;
 
-C ABI;
+validate interfaces;
 
-WebAssembly;
+optimize calls;
 
-WebAssembly Component Model;
+emit ABI metadata;
 
-WIT;
-
-JNI;
-
-.NET interop;
-
-COM;
-
-CORBA;
-
-LLVM;
-
-Protocol Buffers;
-
-FlatBuffers;
-
-Cap'n Proto;
-
-other IDLs;
-
-serialization standards.
+verify compatibility.
 
 
-ULABI should reuse proven ideas where appropriate.
-
-ULABI should not duplicate existing functionality without a documented reason.
+ULABI should not require every compiler to implement all features.
 
 
 ---
 
-102. WebAssembly Relationship
+135. Runtime Integration
 
-ULABI should investigate integration with WebAssembly.
+Runtimes may provide:
 
-Possible relationship:
+resource management;
 
-ULABI
-  |
-  +---- Native
-  |
-  +---- WebAssembly
-  |
-  +---- Other Runtime
+capability enforcement;
 
-WebAssembly may be one implementation target.
+transport;
 
-It must not automatically become the definition of ULABI.
+memory management;
 
+asynchronous execution;
 
----
+recovery;
 
-103. Component Model
+observability.
 
-ULABI should eventually define a component model for independently deployable components.
-
-A component may contain:
-
-Identity
-Interfaces
-Dependencies
-Capabilities
-Resources
-Implementation
-Metadata
 
 
 ---
 
-104. Component Metadata
+136. Reflection
 
-Future metadata may include:
+A Reflection Profile may allow components to discover:
 
-Name
-Version
-Interfaces
-Dependencies
-Capabilities
-Supported Architectures
-Supported Platforms
-Security Requirements
-Integrity Hash
+interface IDs;
 
+functions;
 
----
-
-105. Dependency Management
-
-Components may declare dependencies.
-
-Dependency metadata should support:
+types;
 
 versions;
 
-compatibility ranges;
+capabilities;
 
-optional dependencies;
-
-integrity information.
+profiles.
 
 
-ULABI should not require a particular package manager.
+Reflection must not require runtime reflection in every language.
 
 
 ---
 
-106. Content Addressing
+137. Interface Discovery
 
-Immutable interfaces and components may optionally be identified by cryptographic hashes.
+Discovery should be possible through:
 
-This supports:
+local metadata;
 
-caching;
+registries;
 
-integrity;
+package metadata;
 
-reproducibility;
+runtime negotiation;
 
-verification;
+service discovery.
 
-deployment.
+
+Runtime dependence on a centralized registry must not be mandatory.
+
+
+---
+
+138. ABI Metadata
+
+Implementations should be able to publish machine-readable metadata describing:
+
+interfaces;
+
+types;
+
+versions;
+
+capabilities;
+
+profiles;
+
+architecture support;
+
+security requirements.
 
 
 
 ---
 
-107. Reproducible Components
+139. ABI Documentation Generation
 
-ULABI tooling should support reproducible component metadata and canonical interface definitions.
+ULABI IDL tooling should generate human-readable documentation automatically.
 
+Potential outputs:
 
----
+Markdown;
 
-108. Policy Metadata
+HTML;
 
-Interfaces may declare:
+language-specific documentation;
 
-Maximum Input Size
-Maximum Resource Count
-Required Capability
-Security Level
-Supported Platforms
-Supported Architectures
+API reference;
 
-Metadata is descriptive.
+compatibility reports.
 
-Runtime enforcement remains mandatory.
 
 
 ---
 
-109. Resource Accounting
+140. ABI Testing Generation
 
-Implementations may expose:
+From a ULABI interface definition, tooling should eventually generate:
+
+serialization tests;
+
+validation tests;
+
+compatibility tests;
+
+fuzzing seeds;
+
+conformance tests;
+
+language binding tests.
+
+
+
+---
+
+141. Reproducibility
+
+ULABI tooling should support reproducible:
+
+encoding;
+
+schemas;
+
+generated bindings;
+
+builds;
+
+test results.
+
+
+
+---
+
+142. Deterministic Execution Profile
+
+For suitable systems, a profile may define deterministic behavior.
+
+This is useful for:
+
+testing;
+
+safety;
+
+simulation;
+
+distributed systems;
+
+formal verification.
+
+
+
+---
+
+143. Resource Accounting
+
+ULABI runtimes may expose resource usage:
 
 CPU
 Memory
@@ -2359,2345 +3353,2071 @@ Network
 GPU
 Threads
 Handles
+Energy
 
-This is useful for sandboxing and resource management.
-
-
----
-
-110. Transaction Extension
-
-A future extension may provide:
-
-Begin
-Commit
-Rollback
-Abort
-
-Transaction semantics should remain optional.
+This should remain optional.
 
 
 ---
 
-111. State Management
+144. Energy-Aware Computing
 
-ULABI must distinguish:
+An optional profile may expose energy-related resource information for:
 
-Stateless
-Stateful
-Transient State
-Persistent State
+mobile systems;
 
-This is important for distributed systems.
+embedded systems;
 
+data centers;
 
----
-
-112. Component Lifecycle
-
-Optional lifecycle operations:
-
-Create
-Initialize
-Start
-Pause
-Resume
-Stop
-Shutdown
-Destroy
-
-Simple stateless interfaces do not need to implement all lifecycle operations.
-
-
----
-
-113. AI/ML Interoperability
-
-ULABI should remain AI-neutral.
-
-Higher-level interfaces may support:
-
-tensors;
-
-model metadata;
-
-inference;
-
-embeddings;
-
-token streams;
-
-model resources;
-
-accelerator resources.
-
-
-AI functionality must not make the Core ABI AI-specific.
-
-
----
-
-114. Multi-Runtime Systems
-
-A single application may contain multiple runtimes.
-
-Application
-    |
-    +--- Rust
-    |
-    +--- Python
-    |
-    +--- JVM
-    |
-    +--- WebAssembly
-    |
-    +--- Other
-
-ULABI provides the interoperability boundary.
-
-
----
-
-115. Secure Component Model
-
-A component should be able to execute with restricted:
-
-filesystem access;
-
-network access;
-
-memory;
-
-CPU;
-
-process creation;
-
-device access;
-
-IPC access.
-
-
-Capabilities determine authority.
-
-
----
-
-116. Trust Model
-
-Future implementations may classify components as:
-
-Trusted
-Partially Trusted
-Untrusted
-Unknown
-
-Trust must not automatically grant unlimited capabilities.
-
-
----
-
-117. Secure Defaults
-
-ULABI implementations should default toward:
-
-deny-by-default;
-
-explicit capabilities;
-
-bounded inputs;
-
-bounded resources;
-
-explicit ownership;
-
-explicit errors;
-
-explicit version negotiation.
+battery-powered devices.
 
 
 
 ---
 
-118. Security Invariants
+145. Privacy
 
-ULABI should establish invariants such as:
+ULABI should minimize unnecessary metadata exposure.
 
-1. A component cannot access an ungranted resource.
+Components should be able to control:
 
+identity exposure;
 
-2. A revoked capability cannot be used successfully.
+tracing;
 
+diagnostics;
 
-3. Invalid binary data cannot cause undefined behavior.
+resource metadata;
 
-
-4. A resource cannot be accessed after release.
-
-
-5. A consumer cannot mutate immutable data.
-
-
-6. A restricted capability cannot escalate.
-
-
-7. Unsupported mandatory features cannot silently execute.
-
-
-8. Version mismatches cannot silently change semantics.
-
+debugging information.
 
 
 
 ---
 
-119. Formal Specification
+146. Secure Metadata
 
-The specification should eventually be precise enough to be modeled formally.
-
-Potential formalization targets:
-
-type system;
-
-encoding;
-
-decoding;
-
-ownership;
-
-lifetimes;
-
-resource state machines;
-
-version compatibility;
-
-security capabilities.
-
+Sensitive metadata should never automatically become visible merely because ULABI is being used.
 
 
 ---
 
-120. Formal Verification
+147. Threat Model
 
-Security-critical implementations should eventually be formally verified where practical.
+The specification should maintain a formal threat model addressing:
 
-Priority targets:
+malicious producers;
 
-Parser
-Encoder
-Decoder
-Bounds Checking
-Capability Enforcement
-Resource Lifecycle
-Canonicalization
-Version Negotiation
+malicious consumers;
 
+compromised runtimes;
 
----
+malformed input;
 
-121. Reference Test Vectors
+confused-deputy attacks;
 
-ULABI should publish official test vectors.
-
-Example:
-
-Semantic Value
-      |
-      v
-Canonical Bytes
-      |
-      v
-Decoded Semantic Value
-
-Independent implementations must produce compatible results.
-
-
----
-
-122. Negative Test Vectors
-
-Test vectors must include invalid inputs:
-
-truncated messages;
-
-invalid lengths;
-
-invalid type IDs;
-
-invalid UTF-8;
-
-invalid variants;
-
-invalid handles;
-
-unsupported versions;
-
-oversized messages;
-
-excessive nesting.
-
-
-
----
-
-123. Fuzz Testing
-
-The reference implementation should use continuous fuzz testing.
-
-Targets:
-
-decoder;
-
-encoder;
-
-parser;
-
-IDL parser;
-
-version negotiation;
-
-capability processing;
-
-resource handling.
-
-
-
----
-
-124. Security Testing
-
-Security testing must include:
-
-malformed inputs;
-
-denial of service;
-
-memory exhaustion;
-
-capability escalation;
-
-invalid handles;
+capability theft;
 
 replay;
 
-downgrade;
+downgrade attacks;
 
-isolation failures;
+resource exhaustion;
 
-resource abuse.
+interface spoofing;
+
+state corruption.
 
 
 
 ---
 
-125. Conformance
+148. Downgrade Protection
 
-An implementation may claim ULABI conformance only after passing the applicable conformance suite.
+ABI negotiation must prevent attackers from forcing systems onto weaker security profiles.
 
-Conformance should test:
+
+---
+
+149. Replay Protection
+
+Distributed security profiles should support replay protection where required.
+
+
+---
+
+150. Interface Authenticity
+
+Security profiles may authenticate:
+
+interface definitions;
+
+providers;
+
+consumers;
+
+schemas;
+
+messages;
+
+capabilities.
+
+
+
+---
+
+151. Supply Chain Security
+
+ULABI tooling should eventually support:
+
+signed interfaces;
+
+signed schemas;
+
+provenance;
+
+reproducible builds;
+
+dependency metadata;
+
+vulnerability metadata.
+
+
+
+---
+
+152. ABI Package Format
+
+A future standardized package may contain:
+
+ULABI Manifest
+Interface Definitions
+Type Definitions
+Version
+Profiles
+Architecture Metadata
+Security Metadata
+Compatibility Metadata
+Tests
+Documentation
+
+
+---
+
+153. Registry Independence
+
+A registry may provide discovery, but ULABI interfaces must remain usable without permanent access to a central registry.
+
+This prevents a single registry from becoming a mandatory point of failure.
+
+
+---
+
+154. Offline Operation
+
+ULABI tooling and implementations should support offline operation wherever practical.
+
+This is especially important for:
+
+embedded systems;
+
+secure environments;
+
+isolated networks;
+
+development;
+
+disaster recovery.
+
+
+
+---
+
+155. Governance
+
+ULABI should eventually establish transparent governance.
+
+Governance should address:
+
+specification changes;
+
+namespace allocation;
+
+versioning;
+
+security response;
+
+certification;
+
+disputes;
+
+compatibility policies.
+
+
+
+---
+
+156. Open Governance
+
+No single company should permanently control the ULABI standard.
+
+The project should move toward independent stewardship as adoption grows.
+
+
+---
+
+157. Standards Foundation
+
+Long-term, ULABI may establish an independent standards foundation.
+
+Possible structure:
+
+ULABI Open-Source Project
+        |
+        |
+ULABI Standards Foundation
+        |
+ +------+------+------+
+ |      |      |      |
+Core  Security Testing Governance
+
+
+---
+
+158. Compatibility Charter
+
+ULABI should establish a long-term compatibility commitment:
+
+> Stable ULABI interfaces should remain usable for as long as technically and securely possible.
+
+
+
+Breaking changes require explicit justification.
+
+
+---
+
+159. Namespace Governance
+
+Namespaces should be:
+
+globally unique;
+
+transparent;
+
+documented;
+
+portable;
+
+vendor-neutral.
+
+
+
+---
+
+160. Extension Governance
+
+Extensions should have:
+
+identifiers;
+
+specifications;
+
+compatibility rules;
+
+security considerations;
+
+conformance tests.
+
+
+Experimental extensions must be clearly marked.
+
+
+---
+
+161. Experimental Features
+
+Experimental features should use explicit status:
+
+Experimental
+Draft
+Candidate
+Stable
+Deprecated
+Removed
+
+
+---
+
+162. Deprecation
+
+Deprecated features must have:
+
+replacement guidance;
+
+migration documentation;
+
+compatibility timeline;
+
+security status.
+
+
+
+---
+
+163. Security Response
+
+ULABI should establish a process for:
+
+vulnerability reporting;
+
+coordinated disclosure;
+
+emergency specification changes;
+
+security advisories;
+
+implementation patching.
+
+
+
+---
+
+164. Versioning of the Specification
+
+Specification versions should distinguish:
+
+Core Version
+Profile Version
+IDL Version
+Registry Version
+Conformance Version
+
+Changing one must not necessarily require changing all others.
+
+
+---
+
+165. Compatibility Matrix
+
+ULABI should publish compatibility matrices showing:
+
+Specification
+Implementation
+Language
+Compiler
+Runtime
+Architecture
+Operating System
+Profile
+
+
+---
+
+166. Certification
+
+Future ULABI certification may include:
+
+ULABI Core Certified
+ULABI Security Certified
+ULABI Distributed Certified
+ULABI Embedded Certified
+ULABI Real-Time Certified
+ULABI Safety Certified
+ULABI-R Self-Healing Certified
+
+Certification must be based on publicly documented tests.
+
+
+---
+
+167. Self-Healing Certification
+
+A self-healing certification should measure:
+
+detection;
+
+containment;
+
+recovery;
+
+verification;
+
+security preservation;
+
+state integrity;
+
+recovery latency;
+
+resource behavior.
+
+
+
+---
+
+168. Reference Tools
+
+The ULABI ecosystem should eventually include:
+
+ulabi
+
+with commands such as:
+
+ulabi init
+ulabi validate
+ulabi compile
+ulabi generate
+ulabi inspect
+ulabi diff
+ulabi verify
+ulabi test
+ulabi fuzz
+ulabi negotiate
+ulabi registry
+ulabi trace
+ulabi diagnose
+ulabi recover
+
+
+---
+
+169. ABI Validator
+
+Example:
+
+ulabi validate interface.ulabi
+
+The validator should detect:
+
+invalid types;
+
+duplicate IDs;
+
+incompatible definitions;
+
+invalid versioning;
+
+security violations;
+
+ambiguous semantics.
+
+
+
+---
+
+170. ABI Generator
+
+Example:
+
+ulabi generate --language rust interface.ulabi
+
+The same IDL should be capable of generating bindings for multiple languages.
+
+
+---
+
+171. ABI Diff Tool
+
+Example:
+
+ulabi diff old.ulabi new.ulabi
+
+Output:
+
+Compatible:
+    Added optional field
+
+Breaking:
+    Removed function
+
+Warning:
+    Error semantics changed
+
+
+---
+
+172. ABI Verification
+
+Example:
+
+ulabi verify provider.ulabi consumer.ulabi
+
+The tool should verify:
 
 types;
-
-encoding;
-
-decoding;
 
 functions;
 
 errors;
 
-ownership;
+capabilities;
 
-resources;
+versions;
 
-versioning;
+profiles;
 
-malformed input;
-
-security.
+semantic compatibility.
 
 
 
 ---
 
-126. Cross-Language Conformance
+173. ABI Diagnostics
 
-The same test vectors must be usable by:
+ULABI tools should provide human-readable diagnostics.
+
+Example:
+
+ULABI-1024
+
+Incompatible interface:
+
+Consumer expects:
+    Result<Bytes, StorageError>
+
+Provider exposes:
+    Bytes
+
+Reason:
+    Error semantics are incompatible.
+
+Suggested action:
+    Implement the Result-based interface.
+
+
+---
+
+174. Error Codes
+
+ULABI tooling should have stable machine-readable diagnostic codes.
+
+
+---
+
+175. Testing Strategy
+
+ULABI should use multiple testing layers:
+
+Unit Tests
+Integration Tests
+Interoperability Tests
+Conformance Tests
+Fuzz Tests
+Property Tests
+Compatibility Tests
+Security Tests
+Performance Tests
+Chaos Tests
+Recovery Tests
+Formal Verification
+
+
+---
+
+176. Property-Based Testing
+
+ULABI implementations should test properties such as:
+
+Encode(Decode(x)) == Canonical(x)
+
+where semantically applicable.
+
+
+---
+
+177. Differential Testing
+
+Independent implementations should be able to process the same inputs and compare results.
+
+
+---
+
+178. Cross-Implementation Testing
+
+Example:
+
+Implementation A
+       |
+       +------> Test Corpus
+       |
+Implementation B
+       |
+       +------> Test Corpus
+       |
+Implementation C
+       |
+       +------> Test Corpus
+
+
+---
+
+179. Performance
+
+ULABI should optimize for:
+
+low latency;
+
+low allocation;
+
+efficient encoding;
+
+zero-copy where safe;
+
+streaming;
+
+batching;
+
+hardware acceleration.
+
+
+Correctness always takes precedence over optimization.
+
+
+---
+
+180. Streaming
+
+ULABI should support:
+
+Stream<T>
+
+for large or continuous data.
+
+Streams should define:
+
+ordering;
+
+backpressure;
+
+cancellation;
+
+closure;
+
+errors;
+
+ownership;
+
+resource limits.
+
+
+
+---
+
+181. Backpressure
+
+Streaming systems should be able to communicate:
+
+Ready
+Busy
+Slow
+Paused
+Closed
+
+This prevents uncontrolled memory growth.
+
+
+---
+
+182. Batching
+
+ULABI may support batching for high-performance communication.
+
+Batch semantics must remain explicitly defined.
+
+
+---
+
+183. Compression
+
+Compression should be negotiable.
+
+Example:
+
+None
+Compression-A
+Compression-B
+
+Security and resource limits must still apply.
+
+
+---
+
+184. Encryption
+
+Encryption should be implemented through security profiles.
+
+Encryption must never silently weaken negotiated security.
+
+
+---
+
+185. Hardware Memory
+
+Accelerator profiles may define:
+
+Host Memory
+Device Memory
+Shared Memory
+Pinned Memory
+Mapped Memory
+
+Ownership and synchronization must remain explicit.
+
+
+---
+
+186. AI and Numerical Computing
+
+ULABI should eventually support interoperability with:
+
+tensors;
+
+models;
+
+inference engines;
+
+numerical libraries;
+
+accelerators.
+
+
+These belong in profiles rather than the minimal Core.
+
+
+---
+
+187. Future-Proofing
+
+ULABI must be designed for technologies that do not yet exist.
+
+The architecture must allow:
+
+new languages;
+
+new CPU architectures;
+
+new transports;
+
+new cryptography;
+
+new hardware;
+
+new execution environments;
+
+new security models;
+
+new distributed systems.
+
+
+
+---
+
+188. Extensibility Rule
+
+New features should normally be added as:
+
+Core
++
+Profile
++
+Conformance Tests
+
+rather than repeatedly expanding the Core.
+
+
+---
+
+189. Stability Rule
+
+The Core should evolve much more slowly than profiles.
+
+Core:
+    Slow evolution
+
+Profiles:
+    Faster evolution
+
+Implementations:
+    Continuous evolution
+
+
+---
+
+190. Universal ABI Principle
+
+ULABI should never assume that today's dominant language, CPU, operating system, runtime, or vendor will remain dominant forever.
+
+
+---
+
+191. Sovereignty and Neutrality
+
+ULABI should remain:
+
+open;
+
+portable;
+
+inspectable;
+
+vendor-neutral;
+
+independently implementable.
+
+
+No vendor should be able to lock users into one implementation.
+
+
+---
+
+192. No Single Point of Failure
+
+The ULABI ecosystem should avoid requiring:
+
+one registry;
+
+one compiler;
+
+one runtime;
+
+one cloud provider;
+
+one vendor;
+
+one implementation.
+
+
+
+---
+
+193. Reference Architecture
+
+ULABI
+                             |
+                    +--------+--------+
+                    |                 |
+                 Core             Profiles
+                    |                 |
+       +------------+------+     +----+----------------+
+       |                   |     |    |    |    |     |
+     Types               Calls  Sec  Stream Dist Hardware
+       |                   |     |    |    |    |
+       +-------------------+-----+----+----+----+
+                             |
+                       Runtime Layer
+                             |
+               +-------------+-------------+
+               |             |             |
+             Local        Process       Network
+               |             |             |
+               +-------------+-------------+
+                             |
+                    OS / Hardware
+
+
+---
+
+194. ULABI Ecosystem
+
+The intended ecosystem is:
+
+ULABI
+                           |
+       +-------------------+-------------------+
+       |                   |                   |
+    Languages           Runtimes           Compilers
+       |                   |                   |
+       +-------------------+-------------------+
+                           |
+                       Libraries
+                           |
+                     Applications
+                           |
+                  Operating Systems
+                           |
+                      Hardware
+                           |
+                 Distributed Systems
+
+
+---
+
+195. Relationship to Zamani and Sankofa
+
+ULABI must explicitly preserve the separation between Zamani and Sankofa.
+
+Zamani
+           |
+       ULABI Adapter
+           |
+         ULABI
+           |
+       ULABI Adapter
+           |
+        Sankofa
+
+Zamani remains an independent programming language.
+
+Sankofa remains an independent programming language.
+
+ULABI does not merge their grammars, compilers, runtimes, semantics, or development models.
+
+ULABI only provides an interoperability boundary.
+
+
+---
+
+196. Example Polyglot System
+
+A future system could theoretically contain:
+
+Application
+     |
+   Python
+     |
+   ULABI
+     |
+   Rust
+     |
+   ULABI
+     |
+   C
+     |
+   ULABI
+     |
+   Zamani
+     |
+   ULABI
+     |
+   Sankofa
+     |
+   Hardware
+
+Every language remains independently developed.
+
+
+---
+
+197. Example Self-Healing System
+
+Application
+                      |
+                    ULABI
+                      |
+                Service A
+                      |
+                 Failure
+                      |
+              Failure Detector
+                      |
+              Recovery Manager
+                      |
+        +-------------+-------------+
+        |             |             |
+      Retry        Restart       Failover
+        |             |             |
+        +-------------+-------------+
+                      |
+               Recovery Check
+                      |
+          +-----------+-----------+
+          |                       |
+       Success                  Failure
+          |                       |
+       Resume                  Isolate
+                                  |
+                              Escalate
+
+
+---
+
+198. Example Secure Component
+
+Application
+     |
+ULABI Contract
+     |
+Capability Check
+     |
+Sandbox
+     |
+Resource Quota
+     |
+Implementation
+     |
+Audit / Telemetry
+
+
+---
+
+199. Example Distributed Component
+
+Client
+  |
+ULABI
+  |
+Capability Verification
+  |
+Version Negotiation
+  |
+Security Negotiation
+  |
+Transport
+  |
+Remote ULABI Component
+  |
+Validation
+  |
+Execution
+  |
+Response
+
+
+---
+
+200. Example Recovery Contract
+
+A future interface could declare:
+
+interface Database {
+
+    read(
+        key: String
+    ) -> Result<Bytes, DatabaseError>
+
+    recovery:
+        retry = allowed
+        reconnect = allowed
+        rollback = allowed
+        failover = allowed
+        automatic_restart = restricted
+}
+
+The exact syntax is illustrative and will be formally defined later.
+
+
+---
+
+201. ULABI Safety Rules
+
+ULABI implementations must:
+
+1. Validate untrusted input.
+
+
+2. Enforce resource limits.
+
+
+3. Respect capability boundaries.
+
+
+4. Prevent privilege escalation.
+
+
+5. Prevent use-after-release at the boundary.
+
+
+6. Detect invalid handles.
+
+
+7. Validate versions.
+
+
+8. Validate schemas.
+
+
+9. Prevent unsafe downgrade.
+
+
+10. Preserve security policy during recovery.
+
+
+11. Never silently reinterpret incompatible data.
+
+
+12. Fail safely when contracts cannot be satisfied.
+
+
+
+
+---
+
+202. Failure-Oriented Programming
+
+ULABI should treat failure as a normal operating condition.
+
+Every major operation should have explicit semantics for:
+
+Success
+Failure
+Timeout
+Cancellation
+Unavailable
+Invalid Input
+Resource Exhaustion
+Security Rejection
+Compatibility Failure
+Recovery
+
+
+---
+
+203. Recovery State Machine
+
+ULABI-R should model recovery explicitly:
+
+Healthy
+   |
+Degraded
+   |
+Failure Detected
+   |
+Recovery Pending
+   |
+Recovering
+   |
+Verification
+   |
++--+----------------+
+|                   |
+Success            Failure
+|                   |
+Healthy          Escalation
+                    |
+                Isolation
+                    |
+                 Terminal
+
+
+---
+
+204. Recovery Determinism
+
+Where practical, recovery policies should be deterministic and reproducible.
+
+This makes:
+
+testing;
+
+debugging;
+
+certification;
+
+formal verification
+
+
+more reliable.
+
+
+---
+
+205. Recovery Auditability
+
+Automatic recovery actions should be auditable.
+
+A recovery event should be capable of identifying:
+
+Component
+Failure
+Cause
+Recovery Action
+Authority
+Timestamp
+Result
+Verification
+
+
+---
+
+206. Human Override
+
+High-assurance systems may require human authorization before specific recovery actions.
+
+Examples:
+
+Automatic Retry
+Automatic Reconnect
+Human-Approved Rollback
+Human-Approved Failover
+
+
+---
+
+207. Recovery Budgets
+
+Self-healing systems must have bounded recovery budgets.
+
+Examples:
+
+Maximum retries
+Maximum recovery time
+Maximum resource expenditure
+Maximum rollback depth
+Maximum failover attempts
+
+
+---
+
+208. Recovery Loops
+
+ULABI-R must prevent infinite recovery loops.
+
+Example:
+
+Failure
+ ↓
+Recovery
+ ↓
+Failure
+ ↓
+Recovery
+ ↓
+...
+
+A recovery budget must eventually cause:
+
+Isolation
+
+or:
+
+Escalation
+
+
+---
+
+209. Self-Healing and Compatibility
+
+Self-healing may include compatibility fallback:
+
+Provider v2
+     |
+Consumer v1
+     |
+Negotiation
+     |
+Compatible Subset
+     |
+Safe Fallback
+
+Security downgrade must never be automatic.
+
+
+---
+
+210. Self-Healing and State Integrity
+
+A recovered component must not resume using corrupted state.
+
+State must be:
+
+Validated
+Integrity Checked
+Version Checked
+Capability Checked
+
+before resuming.
+
+
+---
+
+211. ULABI Reliability Model
+
+ULABI reliability should be based on:
+
+Prevention
+   +
+Detection
+   +
+Containment
+   +
+Recovery
+   +
+Verification
+   +
+Learning
+
+"Learning" here means improving external operational knowledge and diagnostics; it does not imply unrestricted autonomous modification of the ABI or security policy.
+
+
+---
+
+212. World-Class Standard Requirements
+
+For ULABI to become a world-class standard, the project should eventually provide:
+
+rigorous specification;
+
+machine-readable definitions;
+
+reference tooling;
+
+independent implementations;
+
+formal conformance suite;
+
+security testing;
+
+fuzzing;
+
+compatibility testing;
+
+cross-platform testing;
+
+long-term governance;
+
+transparent versioning;
+
+certification;
+
+extensive documentation;
+
+migration tooling;
+
+real-world implementations.
+
+
+
+---
+
+213. Implementation Strategy
+
+ULABI should not attempt to implement every language immediately.
+
+Initial implementation should focus on a small number of languages.
+
+Recommended initial implementation targets:
 
 C
 Rust
 Python
-C++
-Go
-Java
-C#
-Zamani
-Sankofa
-Other implementations
 
-when those implementations support the corresponding profile.
+These provide useful coverage across:
+
+native systems;
+
+memory-safe systems;
+
+managed/dynamic systems.
 
 
----
-
-127. Compatibility Matrix
-
-ULABI should maintain a compatibility matrix.
-
-Example:
-
-Producer	Consumer	Expected
-
-v1	v1	Compatible
-v1	v1.1	Compatible if declared
-v1.1	v1	Profile-dependent
-v1	v2	Usually incompatible
-Old profile	New optional feature	Depends on negotiation
-
+Additional languages can be added later.
 
 
 ---
 
-128. Versioning
+214. Initial Implementation Philosophy
 
-ULABI should use semantic specification versioning where practical.
-
-Breaking changes require major versions.
-
-Backward-compatible additions should use minor versions.
-
-Bug fixes should use patch versions.
-
-
----
-
-129. ABI Profiles
-
-Possible profiles:
+Start with:
 
 ULABI Core
-ULABI Resources
-ULABI Async
-ULABI Streams
-ULABI Security
-ULABI Sandbox
-ULABI Distributed
-ULABI Embedded
-ULABI Real-Time
-ULABI Accelerator
-ULABI Tensor
-ULABI Reflection
-
-An implementation may support only the profiles it needs.
-
-
----
-
-130. Minimal Embedded Implementation
-
-A constrained device should be able to implement:
-
-ULABI Core
-+
-Selected Types
-+
-Selected Interfaces
-
-without implementing the entire ecosystem.
-
-
----
-
-131. Real-Time Constraints
-
-The generic ULABI specification must not claim real-time guarantees.
-
-Real-time guarantees belong to a dedicated profile with measurable requirements.
-
-
----
-
-132. Distributed Reliability
-
-A distributed ULABI profile may support:
-
-retry;
-
-timeout;
-
-cancellation;
-
-idempotency;
-
-message ordering;
-
-duplicate detection;
-
-replay protection.
-
-
-
----
-
-133. Network Independence
-
-ULABI should not become tied to one network stack.
-
-Network protocols are transports.
-
-ULABI is the semantic interface.
-
-
----
-
-134. Offline and Air-Gapped Security
-
-ULABI should support fully offline operation.
-
-This is important for:
-
-critical infrastructure;
-
-military environments;
-
-laboratories;
-
-secure enterprise systems;
-
-embedded systems;
-
-private computing environments.
-
-
-
----
-
-135. Privacy
-
-ULABI should avoid requiring unnecessary metadata.
-
-Implementations should not automatically expose:
-
-machine identity;
-
-user identity;
-
-network information;
-
-filesystem paths;
-
-debugging information.
-
-
-Privacy-sensitive metadata should require explicit authorization.
-
-
----
-
-136. Metadata Minimization
-
-Interfaces should expose only the metadata required for interoperability.
-
-
----
-
-137. Side-Channel Considerations
-
-Security profiles should eventually consider:
-
-timing;
-
-memory access;
-
-resource usage;
-
-cache effects;
-
-message-size leakage.
-
-
-ULABI cannot eliminate every side channel, but it should avoid creating unnecessary ones.
-
-
----
-
-138. Deterministic Errors
-
-Where possible, the same invalid operation should result in a predictable semantic error category.
-
-
----
-
-139. Observability Security
-
-Logging and tracing must not automatically expose:
-
-secrets;
-
-credentials;
-
-private data;
-
-capabilities;
-
-cryptographic keys.
-
-
-
----
-
-140. Capability Security for AI
-
-If AI components use ULABI, their capabilities should be explicitly restricted.
-
-For example:
-
-AI Component
    |
-   +-- Model Access
-   +-- File Read
-   +-- Network Access
-   +-- GPU Access
-   +-- Process Access
-
-No capability should be granted merely because the component is an AI system.
-
-
----
-
-141. Universal Data Model
-
-ULABI should eventually provide interoperability for common data domains:
-
-Text
-Binary
-Structured Data
-Images
-Audio
-Video
-Scientific Data
-Tensors
-Models
-Streams
-Resources
-
-These should be layered above the Core type system.
-
-
----
-
-142. Universal Handle Model
-
-ULABI should investigate a standardized resource handle model capable of representing resources without exposing unsafe native pointers.
-
-
----
-
-143. Handle Security
-
-Handles should be:
-
-unforgeable where possible;
-
-scoped;
-
-lifetime-aware;
-
-revocable where required;
-
-capability-associated.
-
-
-
----
-
-144. Handle Portability
-
-A native OS handle must not automatically be assumed to be portable across machines.
-
-Local handles and distributed references must remain distinguishable.
-
-
----
-
-145. Distributed References
-
-A future distributed extension may define remote references.
-
-Remote references must account for:
-
-network failure;
-
-timeout;
-
-authentication;
-
-authorization;
-
-lifetime;
-
-stale references.
-
-
-
----
-
-146. Remote Resource Lifecycle
-
-Remote resources must not remain indefinitely allocated because a network connection disappeared.
-
-Leases or equivalent mechanisms may be required.
-
-
----
-
-147. Leases
-
-A future distributed resource profile may use leases:
-
-Granted
+Reference Implementation
    |
-Active
-   |
-Renewed
-   |
-Expired
+C
+Rust
+Python
+
+Then add:
+
+IDL
+Bindings
+Validation
+Compatibility
+Conformance
+Security
+
+Then progressively add:
+
+Distributed
+Hardware
+Real-Time
+Self-Healing
+Certification
 
 
 ---
 
-148. Component Health
+215. Repository Architecture
 
-A future component model may expose:
-
-Healthy
-Degraded
-Unavailable
-Failed
-Recovering
-
-Health information should be optional.
-
-
----
-
-149. Service Discovery
-
-Distributed profiles may support discovery of:
-
-interfaces;
-
-services;
-
-versions;
-
-capabilities;
-
-endpoints.
-
-
-Discovery must remain separate from the Core ABI.
-
-
----
-
-150. Load Balancing
-
-A higher-level ecosystem may use ULABI interfaces to route requests between equivalent implementations.
-
-ULABI itself should not become a load balancer.
-
-
----
-
-151. Replication
-
-Distributed components may be replicated.
-
-Interfaces should identify whether operations are safe to replicate.
-
-Idempotency metadata becomes important.
-
-
----
-
-152. Caching
-
-Canonical data representations may support safe caching.
-
-Cache behavior must respect:
-
-mutability;
-
-freshness;
-
-authorization;
-
-resource lifetime.
-
-
-
----
-
-153. Content Integrity
-
-Immutable content may be verified using cryptographic hashes.
-
-
----
-
-154. Signed Interfaces
-
-Future profiles may support signed interface definitions.
-
-This could help prevent:
-
-tampering;
-
-substitution;
-
-downgrade attacks.
-
-
-
----
-
-155. Supply Chain Security
-
-The ULABI ecosystem should eventually support:
-
-signed components;
-
-dependency integrity;
-
-provenance metadata;
-
-reproducible builds;
-
-vulnerability reporting.
-
-
-
----
-
-156. Dependency Graph Security
-
-A component's dependency graph should be inspectable.
-
-Security tools should be able to identify:
-
-vulnerable dependencies;
-
-unsigned components;
-
-incompatible versions;
-
-excessive capabilities.
-
-
-
----
-
-157. Component Registry
-
-A future ecosystem may provide registries for ULABI components.
-
-Registries are not part of the Core ABI.
-
-
----
-
-158. Package Managers
-
-ULABI should remain package-manager neutral.
-
-Possible package managers may use ULABI metadata without becoming part of ULABI.
-
-
----
-
-159. Interface Marketplace
-
-A future ecosystem could allow developers to publish:
-
-interfaces;
-
-bindings;
-
-adapters;
-
-components;
-
-conformance profiles.
-
-
-This must not be required for Core interoperability.
-
-
----
-
-160. Governance
-
-ULABI should use transparent governance.
-
-Important changes should go through:
-
-1. Proposal.
-
-
-2. Technical review.
-
-
-3. Security review.
-
-
-4. Compatibility analysis.
-
-
-5. Implementation experimentation.
-
-
-6. Conformance testing.
-
-
-7. Specification approval.
-
-
-
-
----
-
-161. Design Proposal Process
-
-Major changes should be documented through proposals.
-
-Example:
-
-ULABI-0001
-ULABI-0002
-ULABI-0003
-
-Each proposal should include:
-
-motivation;
-
-problem;
-
-alternatives;
-
-design;
-
-security implications;
-
-compatibility;
-
-implementation impact.
-
-
-
----
-
-162. Specification Authority
-
-The specification should remain more authoritative than any single implementation.
-
-A reference implementation demonstrates the specification.
-
-It does not define the specification.
-
-
----
-
-163. Multiple Implementations
-
-ULABI should encourage independent implementations.
-
-Long-term health of the standard should not depend on one codebase.
-
-
----
-
-164. Reference Implementation
-
-The reference implementation should provide:
-
-encoder;
-
-decoder;
-
-validator;
-
-type definitions;
-
-interface support;
-
-conformance tests;
-
-fuzz targets.
-
-
-
----
-
-165. Repository Structure
-
-The repository should eventually become:
+A possible future repository structure:
 
 ULABI/
-|
+│
 ├── README.md
 ├── LICENSE
-├── NOTICE
-├── CONTRIBUTING.md
-├── SECURITY.md
-├── GOVERNANCE.md
-├── CODE_OF_CONDUCT.md
-├── ROADMAP.md
-├── CHANGELOG.md
-|
-├── docs/
-│   ├── ULABI-DESIGN.md
-│   ├── architecture/
-│   ├── security/
-│   ├── interoperability/
-│   ├── comparisons/
-│   └── proposals/
-|
+├── ULABI-DESIGN.md
+│
 ├── spec/
 │   ├── core/
 │   ├── types/
 │   ├── encoding/
-│   ├── functions/
 │   ├── errors/
-│   ├── resources/
-│   ├── memory/
-│   ├── compatibility/
+│   ├── versioning/
+│   └── identity/
+│
+├── profiles/
 │   ├── security/
-│   ├── async/
-│   ├── streams/
+│   ├── memory/
+│   ├── streaming/
 │   ├── distributed/
-│   └── profiles/
-|
-├── reference/
-│   └── rust/
-|
-├── bindings/
+│   ├── hardware/
+│   ├── realtime/
+│   ├── embedded/
+│   ├── observability/
+│   ├── verification/
+│   └── reliability/
+│       └── self-healing/
+│
+├── idl/
+│
+├── registry/
+│
+├── tools/
+│   ├── validator/
+│   ├── generator/
+│   ├── diff/
+│   ├── verifier/
+│   ├── tester/
+│   └── diagnostics/
+│
+├── implementations/
+│   ├── reference/
 │   ├── c/
-│   ├── python/
-│   └── future/
-|
+│   ├── rust/
+│   └── python/
+│
+├── bindings/
+│
 ├── tests/
+│   ├── unit/
+│   ├── integration/
 │   ├── conformance/
-│   ├── interoperability/
-│   ├── negative/
+│   ├── compatibility/
 │   ├── fuzz/
 │   ├── security/
-│   └── compatibility/
-|
-├── examples/
-|
-└── tools/
-    ├── validator/
-    ├── generator/
-    ├── inspector/
-    └── conformance/
+│   ├── chaos/
+│   └── recovery/
+│
+├── corpus/
+│
+├── certification/
+│
+├── governance/
+│
+└── docs/
+
+This structure is illustrative and may evolve.
 
 
 ---
 
-166. Initial Repository Strategy
+216. Development Phases
 
-The project should not immediately implement every proposed feature.
+Phase 0 — Specification Foundation
 
-The first implementation should establish the foundation.
-
-Recommended order:
-
-Specification
-     |
-     v
-Core Types
-     |
-     v
-Canonical Encoding
-     |
-     v
-Decoder / Validator
-     |
-     v
-Function ABI
-     |
-     v
-Error ABI
-     |
-     v
-Conformance
-     |
-     v
-C / Python interoperability
-     |
-     v
-Resources
-     |
-     v
-Security
-     |
-     v
-Async / Streams
-     |
-     v
-Distributed
-     |
-     v
-Hardware / Advanced Profiles
-
-
----
-
-167. Phase 0 — Specification
-
-Deliver:
+Define:
 
 terminology;
 
-architecture;
+Core principles;
 
 type model;
 
-encoding proposal;
+interface identity;
 
-interface model;
+encoding;
 
-compatibility rules;
+error model;
 
-threat model.
+compatibility;
+
+versioning.
 
 
 
 ---
 
-168. Phase 1 — Core
+Phase 1 — Core Prototype
 
 Implement:
 
-primitive types;
-
-strings;
-
-bytes;
-
-records;
-
-variants;
-
-options;
-
-results;
-
-canonical encoding;
-
-decoding;
-
-validation.
-
-
-
----
-
-169. Phase 2 — Function ABI
-
-Implement:
-
-interface IDs;
-
-function IDs;
-
-parameter contracts;
-
-return contracts;
-
-errors;
-
-version metadata.
-
-
-
----
-
-170. Phase 3 — Conformance
-
-Create:
-
-official vectors;
-
-cross-language tests;
-
-malformed-input tests;
-
-fuzz tests;
-
-compatibility tests.
-
-
-
----
-
-171. Phase 4 — Language Interoperability
-
-Initial targets:
-
-Rust
-C
-Python
-
-
----
-
-172. Phase 5 — Resource ABI
-
-Implement:
-
-handles;
-
-ownership;
-
-lifetimes;
-
-capabilities;
-
-quotas.
-
-
-
----
-
-173. Phase 6 — Security
-
-Implement:
-
-capability model;
-
-sandboxing;
-
-authorization;
-
-revocation;
-
-secure handles;
-
-security testing.
-
-
-
----
-
-174. Phase 7 — Concurrency
-
-Implement:
-
-futures;
-
-streams;
-
-cancellation;
-
-deadlines;
-
-backpressure.
-
-
-
----
-
-175. Phase 8 — Performance
-
-Investigate:
-
-zero-copy;
-
-shared memory;
-
-SIMD;
-
-batching;
-
-memory pooling;
-
-efficient encoding.
-
-
-
----
-
-176. Phase 9 — Distributed
-
-Implement profiles for:
-
-network transport;
-
-authentication;
-
-authorization;
-
-replay protection;
-
-retries;
-
-idempotency;
-
-remote resources.
-
-
-
----
-
-177. Phase 10 — Advanced Computing
-
-Investigate:
-
-GPU;
-
-NPU;
-
-TPU;
-
-FPGA;
-
-tensors;
-
-scientific computing;
-
-embedded systems;
-
-real-time systems.
-
-
-
----
-
-178. Phase 11 — Formal Verification
-
-Formally model:
+Core types;
 
 encoding;
 
 decoding;
 
-ownership;
+validation;
 
-resource lifecycle;
-
-capability security;
-
-version compatibility.
+interface metadata.
 
 
 
 ---
 
-179. Phase 12 — Ecosystem
+Phase 2 — IDL
 
-Develop:
+Implement:
 
-binding generators;
+machine-readable IDL;
 
-interface tooling;
+parser;
 
-component tooling;
+validator;
 
-registries;
-
-conformance certification;
-
-debugging tools.
+code generation.
 
 
 
 ---
 
-180. ULABI and Zamani
+Phase 3 — Initial Language Support
 
-If Zamani adopts ULABI:
+Implement:
 
-Zamani Compiler
-      |
-Zamani Runtime
-      |
-ULABI Adapter
-      |
-ULABI
-
-ULABI must not become the definition of Zamani.
+C
+Rust
+Python
 
 
 ---
 
-181. ULABI and Sankofa
+Phase 4 — Compatibility
 
-If Sankofa adopts ULABI:
+Implement:
 
-Sankofa Compiler
-       |
-Sankofa Runtime
-       |
-ULABI Adapter
-       |
-ULABI
+ABI diff;
 
-ULABI must not become the definition of Sankofa.
+compatibility analyzer;
 
+version negotiation;
 
----
-
-182. Independent Language Evolution
-
-A language must be able to evolve without changing ULABI.
-
-Likewise, ULABI must be able to evolve without forcing every language to change.
-
-This separation is fundamental.
-
-
----
-
-183. Universal Adapter Principle
-
-Any language that can implement a ULABI adapter can participate in the ecosystem.
-
-Conceptually:
-
-Language
-   |
-Adapter
-   |
-ULABI
-   |
-Adapter
-   |
-Another Language
-
-
----
-
-184. No Language Should Be Privileged
-
-ULABI must not make one language the "official" language of the ecosystem.
-
-Rust may be the first reference implementation.
-
-C may be an important compatibility boundary.
-
-Python may be an important tooling language.
-
-None of these languages owns ULABI.
-
-
----
-
-185. No Runtime Should Be Privileged
-
-ULABI must not require:
-
-JVM;
-
-CLR;
-
-CPython;
-
-Node.js;
-
-WebAssembly;
-
-Rust runtime;
-
-any other specific runtime.
+schema registry.
 
 
 
 ---
 
-186. No Operating System Should Be Privileged
+Phase 5 — Security
 
-ULABI must be implementable on multiple operating systems.
-
-
----
-
-187. No Hardware Vendor Should Be Privileged
-
-Hardware extensions must remain vendor-neutral.
-
-
----
-
-188. No Cloud Provider Should Be Required
-
-ULABI Core must operate without:
-
-AWS;
-
-Azure;
-
-Google Cloud;
-
-any other cloud provider.
-
-
-
----
-
-189. No Network Should Be Required
-
-Core ULABI must work locally.
-
-
----
-
-190. Security Model Summary
-
-The security architecture is:
-
-Identity
-   |
-Authentication
-   |
-Authorization
-   |
-Capability
-   |
-Resource
-   |
-Operation
-
-with:
-
-Validation
-Isolation
-Resource Limits
-Revocation
-Auditing
-
-around the system.
-
-
----
-
-191. Threat Model
-
-ULABI should consider attackers who can provide:
-
-malformed messages;
-
-malicious components;
-
-compromised dependencies;
-
-excessive requests;
-
-invalid capabilities;
-
-replayed messages;
-
-downgrade requests;
-
-resource exhaustion;
-
-corrupted transports.
-
-
-
----
-
-192. Security Requirements
-
-ULABI implementations should:
-
-1. Validate all untrusted input.
-
-
-2. Bound resource consumption.
-
-
-3. Avoid unsafe pointer exposure.
-
-
-4. Enforce capability boundaries.
-
-
-5. Prevent privilege escalation.
-
-
-6. Handle version mismatches explicitly.
-
-
-7. Support secure isolation.
-
-
-8. Protect sensitive metadata.
-
-
-9. Support fuzzing.
-
-
-10. Publish security advisories.
-
-
-
-
----
-
-193. Privacy Requirements
-
-ULABI should minimize unnecessary metadata.
-
-Implementations should avoid exposing:
-
-credentials;
-
-private paths;
-
-machine identifiers;
-
-user identifiers;
-
-debugging information;
-
-capabilities.
-
-
-unless explicitly required.
-
-
----
-
-194. Performance Philosophy
-
-ULABI should provide a safe baseline and permit optimized implementations.
-
-Optimization areas include:
-
-zero-copy;
-
-batching;
-
-shared memory;
-
-vectorization;
-
-memory pooling;
-
-compact encoding;
-
-asynchronous execution.
-
-
-Optimization must never change semantic behavior.
-
-
----
-
-195. Small Core Principle
-
-The most important architectural rule is:
-
-> Do not put everything into the Core ABI.
-
-
-
-The Core should remain understandable and implementable.
-
-Advanced functionality belongs in profiles.
-
-
----
-
-196. Compatibility Over Convenience
-
-A feature that is convenient today but makes future compatibility impossible should generally not be placed into the Core.
-
-
----
-
-197. Explicit Over Implicit
-
-ULABI should prefer explicit:
-
-ownership;
+Implement:
 
 capabilities;
 
-versions;
+resource quotas;
 
-errors;
+isolation;
+
+authentication;
+
+integrity;
+
+cryptographic profiles.
+
+
+
+---
+
+Phase 6 — Advanced Interoperability
+
+Implement:
+
+streams;
+
+async;
+
+shared memory;
+
+zero-copy;
+
+distributed communication.
+
+
+
+---
+
+Phase 7 — Reliability
+
+Implement:
+
+health;
+
+failure detection;
+
+retries;
+
+circuit breakers;
+
+checkpointing;
+
+rollback;
+
+failover.
+
+
+
+---
+
+Phase 8 — Self-Healing
+
+Implement:
+
+ULABI-R;
+
+recovery state machines;
+
+recovery verification;
+
+recovery budgets;
+
+recovery telemetry;
+
+self-healing conformance.
+
+
+
+---
+
+Phase 9 — Hardware and Real-Time
+
+Implement:
+
+GPU;
+
+accelerator;
+
+tensor;
+
+embedded;
+
+real-time profiles.
+
+
+
+---
+
+Phase 10 — Formal Verification and Certification
+
+Implement:
+
+formal models;
+
+verified components;
+
+certification tooling;
+
+safety profiles.
+
+
+
+---
+
+Phase 11 — Independent Ecosystem
+
+Encourage:
+
+multiple implementations;
+
+external language bindings;
+
+independent registries;
+
+independent test laboratories;
+
+independent governance.
+
+
+
+---
+
+217. Success Criteria
+
+ULABI should not be considered mature merely because it can call a function from another language.
+
+A mature ULABI ecosystem should demonstrate:
+
+✓ Cross-language interoperability
+✓ Cross-runtime interoperability
+✓ Cross-platform interoperability
+✓ Cross-architecture interoperability
+✓ Version compatibility
+✓ Semantic compatibility
+✓ Secure isolation
+✓ Resource safety
+✓ Streaming
+✓ Distributed operation
+✓ Hardware interoperability
+✓ Conformance
+✓ Formal testing
+✓ Fault tolerance
+✓ Self-healing
+✓ Recovery verification
+✓ Long-term compatibility
+✓ Independent implementations
+✓ Vendor neutrality
+
+
+---
+
+218. Core Stability Promise
+
+The ULABI Core should be deliberately conservative.
+
+Before changing the Core:
+
+1. Identify the interoperability problem.
+
+
+2. Determine whether a profile can solve it.
+
+
+3. Evaluate backward compatibility.
+
+
+4. Provide migration guidance.
+
+
+5. Add conformance tests.
+
+
+6. Document security implications.
+
+
+7. Obtain transparent community review.
+
+
+
+
+---
+
+219. Universal Design Rule
+
+ULABI should follow this rule:
+
+> If a feature can safely remain outside the Core, keep it outside the Core.
+
+
+
+This prevents ULABI from becoming unnecessarily large.
+
+
+---
+
+220. Another Universal Design Rule
+
+> Semantics must be standardized before optimization.
+
+
+
+First define what something means.
+
+Then define how implementations may optimize it.
+
+
+---
+
+221. Another Universal Design Rule
+
+> Optimization must never silently change semantics.
+
+
+
+Zero-copy, caching, batching, compression, hardware acceleration, and remote execution are optimizations only when observable behavior remains compliant with the contract.
+
+
+---
+
+222. Another Universal Design Rule
+
+> Security must not depend on obscurity.
+
+
+
+ULABI specifications and implementations should be inspectable.
+
+
+---
+
+223. Another Universal Design Rule
+
+> Recovery must not create greater danger than the failure.
+
+
+
+Self-healing actions must be bounded by:
+
+authorization;
+
+capabilities;
 
 resource limits;
 
-mutability;
+security policy;
 
-effects;
-
-compatibility.
+verification.
 
 
 
 ---
 
-198. Safe Failure Over Undefined Behavior
+224. Another Universal Design Rule
 
-ULABI should prefer:
+> No language should need to become another language to use ULABI.
 
-Defined Error
 
-over:
 
-Undefined Behavior
-
-whenever practical.
+Every language should be able to implement an adapter appropriate to its own architecture.
 
 
 ---
 
-199. Interoperability Over Uniformity
+225. Another Universal Design Rule
 
-ULABI should not try to make all languages identical.
+> ULABI should outlive individual implementations.
 
-The objective is:
 
-Different Systems
-       +
-Common Contract
-       =
-Interoperability
+
+The specification should be capable of surviving:
+
+compiler replacements;
+
+runtime replacements;
+
+operating-system changes;
+
+CPU changes;
+
+vendor changes;
+
+language evolution.
+
 
 
 ---
 
-200. Long-Term Ecosystem
+226. Ultimate Architecture
 
-The mature ULABI ecosystem may contain:
+The long-term ULABI architecture is:
 
 ULABI
-                           |
-          +----------------+----------------+
-          |                |                |
-       Languages        Runtimes         Tools
-          |                |                |
-          +----------------+----------------+
-                           |
-                       Components
-                           |
-          +----------------+----------------+
-          |                |                |
-        Local          Distributed      Hardware
-          |                |                |
-          +----------------+----------------+
-                           |
-                       Ecosystem
-
-Possible ecosystem components include:
-
-interface repositories;
-
-binding generators;
-
-validators;
-
-conformance suites;
-
-security scanners;
-
-component registries;
-
-package managers;
-
-debugging tools;
-
-profiling tools;
-
-interface explorers.
-
-
-These are ecosystem components, not Core ABI requirements.
-
-
----
-
-201. Future Research Areas
-
-ULABI should continuously investigate:
-
-memory-safe FFI;
-
-zero-copy across runtimes;
-
-capability security;
-
-formal verification;
-
-distributed references;
-
-hardware acceleration;
-
-quantum computing interfaces;
-
-heterogeneous computing;
-
-AI/ML interoperability;
-
-deterministic distributed execution;
-
-secure enclaves;
-
-confidential computing;
-
-persistent memory;
-
-novel architectures.
-
-
-
----
-
-202. Quantum and Specialized Computing
-
-A future extension may investigate interfaces for:
-
-quantum data;
-
-quantum devices;
-
-quantum job submission;
-
-classical/quantum interoperability.
-
-
-Quantum functionality must remain an extension rather than modifying the Core ABI.
-
-
----
-
-203. Confidential Computing
-
-Future security profiles may support:
-
-secure enclaves;
-
-trusted execution environments;
-
-remote attestation;
-
-hardware-backed identity.
-
-
-
----
-
-204. Persistent Memory
-
-Future resource profiles may support persistent-memory resources.
-
-The interface must distinguish persistent state from ordinary memory.
-
-
----
-
-205. Heterogeneous Computing
-
-ULABI should eventually support systems combining:
-
-CPU
-GPU
-NPU
-FPGA
-TPU
-Other Accelerators
-
-without making any particular accelerator mandatory.
-
-
----
-
-206. Universal Execution Graphs
-
-A future higher-level component system may represent:
-
-Component A
-    |
-Component B
-    |
-Component C
-    |
-Component D
-
-with ULABI contracts connecting each stage.
-
-This could support:
-
-data pipelines;
-
-AI pipelines;
-
-scientific workflows;
-
-distributed applications.
-
-
-
----
-
-207. Universal Resource Graph
-
-Resources may eventually be modeled as a graph:
-
-Application
-   |
-Component
-   |
-Capability
-   |
-Resource
-   |
-Hardware
-
-This enables stronger resource accounting and security analysis.
-
-
----
-
-208. Universal Policy Engine
-
-A future ecosystem may evaluate:
-
-Component
-+
-Identity
-+
-Capability
-+
-Resource
-+
-Policy
-=
-Allowed / Denied
-
-Policy engines must remain optional.
-
-
----
-
-209. Verification Pipeline
-
-A mature ULABI component could pass through:
-
-Source
-  |
-Build
-  |
-Tests
-  |
-Fuzzing
-  |
-Security Analysis
-  |
-Conformance
-  |
-Signature
-  |
-Deployment
-
-
----
-
-210. Reproducible Builds
-
-The ecosystem should encourage reproducible builds.
-
-A component should optionally publish:
-
-source version;
-
-compiler version;
-
-dependency graph;
-
-build metadata;
-
-integrity hash.
-
-
-
----
-
-211. Provenance
-
-Future metadata may describe where a component came from and how it was produced.
-
-
----
-
-212. Security Advisories
-
-The project should maintain a formal vulnerability reporting process.
-
-Security issues should receive:
-
-severity;
-
-affected versions;
-
-mitigation;
-
-fixed versions;
-
-disclosure information.
-
-
-
----
-
-213. Breaking Changes
-
-Breaking changes should require:
-
-explicit documentation;
-
-major version increment;
-
-migration guidance;
-
-compatibility analysis.
-
-
-
----
-
-214. Experimental Features
-
-Experimental features must be clearly marked.
-
-Example:
-
-EXPERIMENTAL
-NOT STABLE
-MAY CHANGE
-
-Experimental features should not silently become stable.
-
-
----
-
-215. Deprecation
-
-Features should have a defined deprecation process:
-
-Stable
-   |
-Deprecated
-   |
-Migration Period
-   |
-Removed in Major Version
-
-
----
-
-216. Specification Tests
-
-The specification itself should have executable tests where possible.
-
-This reduces ambiguity between documentation and implementation.
-
-
----
-
-217. Golden Tests
-
-Canonical encodings should have golden test vectors.
-
-
----
-
-218. Differential Testing
-
-Independent implementations should be able to compare:
-
-Implementation A
-        |
-        v
-Canonical Output
-        ^
-        |
-Implementation B
-
-Differences should be detectable automatically.
-
-
----
-
-219. Interoperability Laboratory
-
-A future project may provide automated cross-language interoperability testing.
-
-Example:
-
-ULABI Test Matrix
-
-       C   Rust   Go   Python   Java
-C      ✓     ✓     ✓      ✓       ✓
-Rust   ✓     ✓     ✓      ✓       ✓
-Go     ✓     ✓     ✓      ✓       ✓
-...
-
-
----
-
-220. Certification
-
-A future ecosystem may define ULABI conformance certification.
-
-Certification should be based on objective tests.
-
-
----
-
-221. Compatibility Badges
-
-Implementations may advertise:
-
-ULABI Core
-ULABI Resources
-ULABI Security
-ULABI Async
-ULABI Distributed
-
-
----
-
-222. Implementation Levels
-
-Possible levels:
-
-Level 0
-
-Specification-only.
-
-Level 1
-
-Core encoding and types.
-
-Level 2
-
-Function and error ABI.
-
-Level 3
-
-Resources and security.
-
-Level 4
-
-Concurrency and advanced features.
-
-Level 5
-
-Distributed interoperability.
-
-This provides a gradual adoption path.
-
-
----
-
-223. Success Criteria
-
-ULABI succeeds when independently developed systems can:
-
-1. Define compatible interfaces.
-
-
-2. Encode compatible values.
-
-
-3. Decode compatible values.
-
-
-4. Invoke functions.
-
-
-5. Propagate errors.
-
-
-6. Manage resources safely.
-
-
-7. Negotiate versions.
-
-
-8. Enforce capabilities.
-
-
-9. Reject malformed data.
-
-
-10. Pass the same conformance tests.
-
-
-11. Interoperate across languages.
-
-
-12. Interoperate across runtimes.
-
-
-13. Interoperate across operating systems.
-
-
-14. Interoperate across CPU architectures.
-
-
-15. Eventually interoperate across machines.
-
-
-
-
----
-
-224. Ultimate Goal
-
-The ultimate goal is not:
-
-> "Every language uses ULABI internally."
-
-
-
-The goal is:
-
-> "Any language can participate in an open interoperability ecosystem when it chooses to implement ULABI."
-
-
-
-
----
-
-225. Final Architectural Model
-
-+----------------------------------------------------------+
-|                    APPLICATIONS                          |
-+----------------------------------------------------------+
-|                LANGUAGE BINDINGS                         |
-+----------------------------------------------------------+
-|                ULABI INTERFACES                          |
-+----------------------------------------------------------+
-|                     ULABI CORE                           |
-|                                                          |
-| Types | Encoding | Functions | Errors | Versioning      |
-+----------------------------------------------------------+
-|                     EXTENSIONS                           |
-|                                                          |
-| Resources | Memory | Async | Streams | Security         |
-| Distributed | Hardware | Tensor | Real-Time | Embedded |
-+----------------------------------------------------------+
-|                  TRANSPORT / RUNTIME                     |
-+----------------------------------------------------------+
-|                 OPERATING SYSTEM                         |
-+----------------------------------------------------------+
-|                 CPU / HARDWARE                           |
-+----------------------------------------------------------+
-
-
----
-
-226. Core Identity
-
-ULABI is:
-
-Universal
-Language-neutral
-Runtime-neutral
-Platform-neutral
-Architecture-neutral
-Vendor-neutral
-Open
-Extensible
-Secure
-Testable
-Versioned
+                                |
+                    +-----------+-----------+
+                    |                       |
+                 CORE                   GOVERNANCE
+                    |                       |
+        +-----------+-----------+      Open + Independent
+        |           |           |
+      Types       Calls       Errors
+        |           |           |
+        +-----------+-----------+
+                    |
+             Interface Identity
+                    |
+             Versioning / Schema
+                    |
+          Compatibility / Negotiation
+                    |
+       +------------+-------------+
+       |            |             |
+    Memory       Security      Resources
+       |            |             |
+       +------------+-------------+
+                    |
+             Execution Semantics
+                    |
+       +------------+-------------+
+       |            |             |
+     Local       Process       Network
+       |            |             |
+       +------------+-------------+
+                    |
+             Extension Profiles
+                    |
+    +-------+-------+-------+--------+
+    |       |       |       |        |
+ Streams  Async  Hardware  RealTime  Distributed
+    |       |       |       |        |
+    +-------+-------+-------+--------+
+                    |
+             Reliability Layer
+                    |
+             +------+------+
+             |             |
+          Detection     Recovery
+             |             |
+             +------+------+
+                    |
+               ULABI-R
+             Self-Healing
+                    |
+       +------------+-------------+
+       |            |             |
+    Retry       Rollback       Failover
+       |            |             |
+       +------------+-------------+
+                    |
+             Recovery Verification
+                    |
+             Conformance Ecosystem
+                    |
+       +------------+-------------+
+       |            |             |
+    Testing      Security     Certification
+       |            |             |
+       +------------+-------------+
+                    |
+          Multiple Implementations
+                    |
+       +------------+-------------+
+       |            |             |
+    Languages    Runtimes      Hardware
 
 
 ---
 
 227. Final Principle
 
-> Build the bridge, not another island.
+ULABI should aim to become infrastructure rather than an application.
+
+Its greatest success would be a future in which developers do not need to ask:
+
+> "Which language was this component written in?"
 
 
 
-Programming languages should remain free to evolve independently.
+or:
 
-Runtimes should remain free to evolve independently.
-
-Operating systems should remain free to evolve independently.
-
-Hardware should remain free to evolve independently.
-
-ULABI exists to make those independent systems interoperable.
+> "Which runtime does this library require?"
 
 
----
 
-228. Final Statement
+or:
 
-ULABI is intended to become an open interoperability foundation for the world's programming languages and computing environments.
+> "Which vendor owns the interface?"
 
-It should provide a common contract without imposing a common implementation.
 
-It should enable:
 
-Language A
-     |
-Language B
-     |
-Language C
-     |
-Language D
-     |
-Language E
-     |
-   ULABI
-     |
-Language F
-     |
-Language G
-     |
-Language H
+Instead, they can ask:
 
-while preserving the independence of every participant.
+> "Does this component implement the ULABI contract?"
 
-The Core ABI must remain small.
 
-The extensions must remain modular.
 
-Security must be designed into the architecture.
-
-Compatibility must be treated as a first-class requirement.
-
-Conformance must be objectively testable.
-
-Implementations must remain independent.
-
-And the standard must remain open.
+If the answer is yes, the component can participate in the ecosystem.
 
 
 ---
 
-229. ULABI Mantra
+228. Final Vision
 
-> Different languages.
+The ultimate goal of ULABI is:
 
-Different runtimes.
+Any Language
+      |
+Any Compiler
+      |
+Any Runtime
+      |
+Any Library
+      |
+Any Application
+      |
+Any Operating System
+      |
+Any Architecture
+      |
+Any Hardware
+      |
+Any Deployment Model
+      |
+      v
+    ULABI
+      |
+      v
+Universal Interoperability
 
-Different systems.
+ULABI should provide the stable contract.
 
-One open interoperability contract.
+Languages remain independent.
 
-ULABI.
+Runtimes remain independent.
+
+Operating systems remain independent.
+
+Hardware remains independent.
+
+Vendors remain independent.
+
+Implementations remain replaceable.
+
+The ecosystem remains open.
+
+And advanced capabilities — including security, distributed execution, hardware acceleration, formal verification, reliability, and self-healing — remain modular profiles built on top of a small, stable, universal Core.
+
+
+---
+
+229. Status
+
+This document describes the architectural direction of ULABI.
+
+It is a design specification and not yet a finalized ABI standard.
+
+Normative requirements will be progressively separated into formal specification documents as the implementation matures.
+
+Proposed future specification structure:
+
+ULABI Core Specification
+ULABI Type System Specification
+ULABI Encoding Specification
+ULABI Interface Specification
+ULABI Identity Specification
+ULABI Versioning Specification
+ULABI Memory Specification
+ULABI Resource Specification
+ULABI Security Specification
+ULABI Capability Specification
+ULABI Streaming Specification
+ULABI Async Specification
+ULABI Distributed Specification
+ULABI Hardware Specification
+ULABI Real-Time Specification
+ULABI Embedded Specification
+ULABI Observability Specification
+ULABI Verification Specification
+ULABI Reliability Specification
+ULABI-R Self-Healing Specification
+ULABI Certification Specification
+ULABI Governance Specification
+
+
+---
+
+230. Closing Statement
+
+ULABI is designed around a simple idea:
+
+> Different systems should be able to remain different while still being able to communicate safely, reliably, efficiently, and predictably.
 
 
 
-This is a much better foundation for the repository than the earlier document because it incorporates the original design direction **and** the newer ideas—security capabilities, resource handles, zero-copy, shared memory, distributed ABI, version negotiation, IDL, conformance, fuzzing, formal verification, hardware/accelerator support, AI/ML, embedded/real-time profiles, privacy, supply-chain security, component models, and future research—while keeping **Zamani and Sankofa explicitly separate**.
+The Core should remain small.
+
+The semantics should remain precise.
+
+The ecosystem should remain open.
+
+The implementations should remain independent.
+
+The interfaces should remain stable.
+
+Security should be explicit.
+
+Failure should be expected.
+
+Recovery should be bounded and verifiable.
+
+And the standard should be designed to remain useful long after today's programming languages, runtimes, processors, operating systems, and vendors have changed.
+
+ULABI is intended to be a universal interoperability foundation — not another programming language, runtime, or vendor-controlled platform.
