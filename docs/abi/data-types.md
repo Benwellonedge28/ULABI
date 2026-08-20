@@ -1,7 +1,5 @@
 I read the current ULABI-DESIGN.md first. It establishes the language-neutral, layered, minimal-Core + profiles architecture, including semantic types, canonical encoding, memory boundaries, versioning, security, distributed operation, and explicit separation between ULABI, Zamani, and Sankofa.
 
-I also checked docs/abi/data-types.md; it is currently only a placeholder, so Design Document 4 can define this component properly without conflicting with existing implementation.
-
 Below is the complete file for:
 
 docs/abi/data-types.md
